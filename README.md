@@ -30,7 +30,8 @@ Permissions
 ---
 Configuration
 ---
-Links
+Links:
+
 Discord: https://discord.gg/58b4anHxFd
 
 SpigotMC: https://www.spigotmc.org/resources/glavarise.121514/
