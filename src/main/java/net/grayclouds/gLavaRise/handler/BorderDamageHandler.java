@@ -56,6 +56,9 @@ public class BorderDamageHandler {
             @Override
             public void run() {
                 for (World world : plugin.getServer().getWorlds()) {
+                    // Load config for each world
+                    loadConfig(world);
+                    
                     WorldBorder border = world.getWorldBorder();
                     double borderSize = border.getSize() / 2;
                     Location center = border.getCenter();

@@ -13,8 +13,10 @@ import org.bukkit.entity.Player;
 public class LavaListener {
     private Plugin plugin;
     private boolean isRising = false;
-    private int currentHeight = -64;
-    private int savedHeight = -64;
+    private int currentHeight;
+    private int savedHeight;
+    private int startHeight;
+    private int endHeight;
     private int riseInterval;
     private BukkitRunnable lavaTask;
     private boolean replaceAllBlocks;
@@ -45,12 +47,27 @@ public class LavaListener {
     private void loadConfig() {
         plugin.saveDefaultConfig();
         FileConfiguration config = plugin.getConfig();
-        World defaultWorld = plugin.getServer().getWorlds().get(0);
-        String worldType = getWorldType(defaultWorld);
+        // Remove default world loading here - we'll load per world
+    }
+
+    private void loadWorldConfig(World world) {
+        FileConfiguration config = plugin.getConfig();
+        String worldType = getWorldType(world);
         String basePath = "CONFIG.WORLDS." + worldType;
+        
         this.riseInterval = config.getInt(basePath + ".RISE-INTERVAL", 15);
         this.replaceAllBlocks = config.getBoolean(basePath + ".BLOCK-SETTINGS.replace-all-blocks", true);
         this.riseType = config.getString(basePath + ".RISE-TYPE", "LAVA");
+        
+        // Load height settings
+        this.startHeight = config.getInt(basePath + ".HEIGHT.start", -64);
+        this.endHeight = config.getInt(basePath + ".HEIGHT.end", world.getMaxHeight());
+        
+        // Initialize current height if not set
+        if (currentHeight < startHeight) {
+            currentHeight = startHeight;
+            savedHeight = startHeight;
+        }
     }
 
     private void placeRisingBlock(World world, int x, int y, int z) {
@@ -74,27 +91,25 @@ public class LavaListener {
     }
 
     public void startLavaRise(World world) {
-        if (world == null) {
-            return;
-        }
+        if (world == null) return;
 
         if (!isWorldEnabled(world)) {
-            plugin.getLogger().warning("Lava rise is not enabled for " + getWorldType(world));
+            plugin.getLogger().warning("Rise is not enabled for " + getWorldType(world));
             return;
         }
 
-        if (isRising) {
-            return;
-        }
+        if (isRising) return;
 
-        if (currentHeight < -64 || currentHeight > world.getMaxHeight()) {
-            currentHeight = savedHeight != -64 ? savedHeight : -64;
+        // Load config for this specific world
+        loadWorldConfig(world);
+
+        // Validate height bounds
+        if (currentHeight < startHeight || currentHeight > endHeight) {
+            currentHeight = savedHeight != startHeight ? savedHeight : startHeight;
         }
 
         borderSize = WorldBorderHandler.getBorderSize(world) / 2;
-        if (borderSize <= 0) {
-            return;
-        }
+        if (borderSize <= 0) return;
 
         isRising = true;
 
@@ -104,7 +119,7 @@ public class LavaListener {
         lavaTask = new BukkitRunnable() {
             @Override
             public void run() {
-                if (currentHeight >= world.getMaxHeight() || !isRising) {
+                if (currentHeight >= endHeight || !isRising) {
                     this.cancel();
                     isRising = false;
                     return;
@@ -131,7 +146,6 @@ public class LavaListener {
             }
         };
 
-        // Schedule the task to run every 'riseInterval' seconds
         lavaTask.runTaskTimer(plugin, 0L, riseInterval * 20L);
     }
 
@@ -148,8 +162,8 @@ public class LavaListener {
             lavaTask.cancel();
         }
         isRising = false;
-        currentHeight = -64;
-        savedHeight = -64;
+        currentHeight = startHeight;  // Use configured start height
+        savedHeight = startHeight;
     }
 
     public boolean isRising() {

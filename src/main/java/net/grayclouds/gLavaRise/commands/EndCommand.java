@@ -22,7 +22,9 @@ public class EndCommand implements CommandExecutor {
         FileConfiguration config = plugin.getConfig();
         String playerOnlyMessage = config.getString("CONFIG.messages.player-only", "This command can only be used by players!");
         String noPermissionMessage = config.getString("CONFIG.messages.no-permission", "You don't have permission to use this command!");
-        String endMessage = config.getString("CONFIG.messages.lava-end", "Lava rise has been ended!");
+        String endMessage = config.getString("CONFIG.MESSAGES.lava-end", "The %type% rise has been ended at height: %height%!")
+            .replace("%type%", lavaListener.getRiseTypeName())
+            .replace("%height%", String.valueOf(lavaListener.getCurrentHeight()));
 
         if (!(sender instanceof Player)) {
             sender.sendMessage(playerOnlyMessage);

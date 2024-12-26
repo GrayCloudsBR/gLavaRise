@@ -50,11 +50,11 @@ public class WorldBorderHandler {
     }
 
     public static void setupWorldBorder(World world, Location center) {
-        // Add null checks
-        if (world == null || center == null) {
-            return;
-        }
+        if (world == null || center == null) return;
 
+        // Load config for this specific world
+        loadConfig(world);
+        
         // Validate sizes
         if (initialSize <= 0) {
             initialSize = 250; // Default fallback

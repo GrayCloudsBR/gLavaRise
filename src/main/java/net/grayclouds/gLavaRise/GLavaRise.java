@@ -102,6 +102,47 @@ public final class GLavaRise extends JavaPlugin {
             return false;
         }
 
+        // Validate HEIGHT section
+        if (!config.isConfigurationSection(basePath + ".HEIGHT")) {
+            getLogger().warning("Missing HEIGHT section, setting defaults");
+            config.set(basePath + ".HEIGHT.start", -64);
+            config.set(basePath + ".HEIGHT.end", 320);
+            needsSave = true;
+        } else {
+            if (!config.isInt(basePath + ".HEIGHT.start")) {
+                getLogger().warning("Missing start height, setting default: -64");
+                config.set(basePath + ".HEIGHT.start", -64);
+                needsSave = true;
+            }
+            if (!config.isInt(basePath + ".HEIGHT.end")) {
+                getLogger().warning("Missing end height, setting default: 320");
+                config.set(basePath + ".HEIGHT.end", 320);
+                needsSave = true;
+            }
+        }
+
+        // Validate NETHER settings if enabled
+        if (config.getBoolean("CONFIG.WORLDS.NETHER.enabled", false)) {
+            basePath = "CONFIG.WORLDS.NETHER";
+            if (!config.isConfigurationSection(basePath + ".HEIGHT")) {
+                getLogger().warning("Missing Nether HEIGHT section, setting defaults");
+                config.set(basePath + ".HEIGHT.start", 0);
+                config.set(basePath + ".HEIGHT.end", 128);
+                needsSave = true;
+            }
+        }
+
+        // Validate END settings if enabled
+        if (config.getBoolean("CONFIG.WORLDS.END.enabled", false)) {
+            basePath = "CONFIG.WORLDS.END";
+            if (!config.isConfigurationSection(basePath + ".HEIGHT")) {
+                getLogger().warning("Missing End HEIGHT section, setting defaults");
+                config.set(basePath + ".HEIGHT.start", 0);
+                config.set(basePath + ".HEIGHT.end", 256);
+                needsSave = true;
+            }
+        }
+
         if (needsSave) {
             getLogger().info("Saving updated configuration...");
             saveConfig();

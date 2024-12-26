@@ -20,10 +20,12 @@ public class PauseCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         FileConfiguration config = plugin.getConfig();
-        String playerOnlyMessage = config.getString("CONFIG.messages.player-only", "This command can only be used by players!");
-        String noPermissionMessage = config.getString("CONFIG.messages.no-permission", "You don't have permission to use this command!");
-        String notActiveMessage = config.getString("CONFIG.messages.lava-not-active", "Lava rise is not currently active!");
-        String pauseMessage = config.getString("CONFIG.messages.lava-pause", "Lava rise has been paused!");
+        String playerOnlyMessage = config.getString("CONFIG.MESSAGES.player-only", "This command can only be used by players!");
+        String noPermissionMessage = config.getString("CONFIG.MESSAGES.no-permission", "You don't have permission to use this command!");
+        String notActiveMessage = config.getString("CONFIG.MESSAGES.lava-not-active", "Lava rise is not currently active!");
+        String pauseMessage = config.getString("CONFIG.MESSAGES.lava-pause", "The %type% rise has been paused at height: %height%!")
+            .replace("%type%", lavaListener.getRiseTypeName())
+            .replace("%height%", String.valueOf(lavaListener.getCurrentHeight()));
 
         if (!(sender instanceof Player)) {
             sender.sendMessage(playerOnlyMessage);
