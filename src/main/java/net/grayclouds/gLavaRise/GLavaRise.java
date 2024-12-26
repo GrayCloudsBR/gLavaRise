@@ -46,55 +46,48 @@ public final class GLavaRise extends JavaPlugin {
         FileConfiguration config = getConfig();
         boolean needsSave = false;
         
-        // Ensure CONFIG section exists
-        if (!config.isConfigurationSection("CONFIG")) {
-            getLogger().severe("Missing main CONFIG section!");
+        // Ensure CONFIG and WORLDS sections exist
+        if (!config.isConfigurationSection("CONFIG") || !config.isConfigurationSection("CONFIG.WORLDS")) {
+            getLogger().severe("Missing main CONFIG or WORLDS section!");
             return false;
         }
 
-        // Validate RISE-INTERVAL
-        if (!config.isInt("CONFIG.RISE-INTERVAL")) {
+        // Validate OVERWORLD section (required)
+        if (!config.isConfigurationSection("CONFIG.WORLDS.OVERWORLD")) {
+            getLogger().severe("Missing OVERWORLD section!");
+            return false;
+        }
+
+        // Validate OVERWORLD settings
+        String basePath = "CONFIG.WORLDS.OVERWORLD";
+        if (!config.isBoolean(basePath + ".enabled")) {
+            getLogger().warning("Missing enabled setting, setting default: true");
+            config.set(basePath + ".enabled", true);
+            needsSave = true;
+        }
+
+        if (!config.isInt(basePath + ".RISE-INTERVAL")) {
             getLogger().warning("Missing RISE-INTERVAL, setting default: 15");
-            config.set("CONFIG.RISE-INTERVAL", 15);
+            config.set(basePath + ".RISE-INTERVAL", 15);
             needsSave = true;
         }
 
         // Validate BORDER section
-        if (!config.isConfigurationSection("CONFIG.BORDER")) {
+        if (!config.isConfigurationSection(basePath + ".BORDER")) {
             getLogger().severe("Missing BORDER section!");
             return false;
         }
-        if (!config.isInt("CONFIG.BORDER.initial-size")) {
-            getLogger().warning("Missing initial-size, setting default: 250");
-            config.set("CONFIG.BORDER.initial-size", 250);
-            needsSave = true;
-        }
-        if (!config.isBoolean("CONFIG.BORDER.shrink-enabled")) {
-            getLogger().warning("Missing shrink-enabled, setting default: true");
-            config.set("CONFIG.BORDER.shrink-enabled", true);
-            needsSave = true;
-        }
 
         // Validate LAVA section
-        if (!config.isConfigurationSection("CONFIG.LAVA")) {
+        if (!config.isConfigurationSection(basePath + ".LAVA")) {
             getLogger().severe("Missing LAVA section!");
             return false;
         }
-        if (!config.isBoolean("CONFIG.LAVA.replace-all-blocks")) {
-            getLogger().warning("Missing replace-all-blocks, setting default: true");
-            config.set("CONFIG.LAVA.replace-all-blocks", true);
-            needsSave = true;
-        }
 
         // Validate BORDER-DAMAGE section
-        if (!config.isConfigurationSection("CONFIG.BORDER-DAMAGE")) {
+        if (!config.isConfigurationSection(basePath + ".BORDER-DAMAGE")) {
             getLogger().severe("Missing BORDER-DAMAGE section!");
             return false;
-        }
-        if (!config.isBoolean("CONFIG.BORDER-DAMAGE.enabled")) {
-            getLogger().warning("Missing border damage enabled, setting default: true");
-            config.set("CONFIG.BORDER-DAMAGE.enabled", true);
-            needsSave = true;
         }
 
         // Validate MESSAGES section
