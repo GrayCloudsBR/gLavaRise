@@ -36,6 +36,6 @@ Discord: https://discord.gg/58b4anHxFd
 
 SpigotMC: https://www.spigotmc.org/resources/glavarise.121514/
 
-Donation Link: https://streamlabs.com/graycloudsbr1
+Donation Link: https://www.paypal.com/donate/?hosted_button_id=KB4HY5Y4QA8A4
 ---
 Made with ❤️ by GrayClouds
