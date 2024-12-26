@@ -24,7 +24,8 @@ public class StartCommand implements CommandExecutor {
         FileConfiguration config = plugin.getConfig();
         String playerOnlyMessage = config.getString("CONFIG.MESSAGES.player-only", "This command can only be used by players!");
         String noPermissionMessage = config.getString("CONFIG.MESSAGES.no-permission", "You don't have permission to use this command!");
-        String startMessage = config.getString("CONFIG.MESSAGES.lava-start", "Lava rise has started!");
+        String startMessage = config.getString("CONFIG.MESSAGES.lava-start", "The %type% is now rising!")
+            .replace("%type%", lavaListener.getRiseTypeName());
 
         if (!(sender instanceof Player)) {
             sender.sendMessage(playerOnlyMessage);

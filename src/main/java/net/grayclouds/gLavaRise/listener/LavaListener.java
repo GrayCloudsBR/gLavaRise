@@ -60,7 +60,7 @@ public class LavaListener {
         }
     }
 
-    private String getRiseTypeName() {
+    public String getRiseTypeName() {
         return riseType.equals("VOID") ? "void" : "lava";
     }
 
@@ -116,15 +116,13 @@ public class LavaListener {
                 Location center = WorldBorderHandler.getCenter(world);
                 borderSize = WorldBorderHandler.getBorderSize(world) / 2;
                 
-                // Place lava at current height
+                // Place blocks at current height
                 for (int x = (int) (center.getBlockX() - borderSize); x < center.getBlockX() + borderSize; x++) {
                     for (int z = (int) (center.getBlockZ() - borderSize); z < center.getBlockZ() + borderSize; z++) {
                         try {
-                            if (replaceAllBlocks || world.getBlockAt(x, currentHeight, z).getType() == Material.AIR) {
-                                world.getBlockAt(x, currentHeight, z).setType(Material.LAVA);
-                            }
+                            placeRisingBlock(world, x, currentHeight, z);
                         } catch (Exception e) {
-                            plugin.getLogger().warning("Error placing lava at " + x + ", " + currentHeight + ", " + z);
+                            plugin.getLogger().warning("Error placing " + riseType + " at " + x + ", " + currentHeight + ", " + z);
                         }
                     }
                 }
