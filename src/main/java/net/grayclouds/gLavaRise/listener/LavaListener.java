@@ -25,11 +25,30 @@ public class LavaListener {
         loadConfig();
     }
 
+    private boolean isWorldEnabled(World world) {
+        String worldType = getWorldType(world);
+        return plugin.getConfig().getBoolean("CONFIG.WORLDS." + worldType + ".enabled", false);
+    }
+
+    private String getWorldType(World world) {
+        switch (world.getEnvironment()) {
+            case NETHER:
+                return "NETHER";
+            case THE_END:
+                return "END";
+            default:
+                return "OVERWORLD";
+        }
+    }
+
     private void loadConfig() {
         plugin.saveDefaultConfig();
         FileConfiguration config = plugin.getConfig();
-        this.riseInterval = config.getInt("CONFIG.RISE-INTERVAL", 15);  // Updated to match config
-        this.replaceAllBlocks = config.getBoolean("CONFIG.LAVA.replace-all-blocks", true);
+        // Use default world for initial config load
+        World defaultWorld = plugin.getServer().getWorlds().get(0);
+        String worldType = getWorldType(defaultWorld);
+        this.riseInterval = config.getInt("CONFIG.WORLDS." + worldType + ".RISE-INTERVAL", 15);
+        this.replaceAllBlocks = config.getBoolean("CONFIG.WORLDS." + worldType + ".LAVA.replace-all-blocks", true);
     }
 
     private void announceHeight(World world) {
@@ -42,6 +61,11 @@ public class LavaListener {
 
     public void startLavaRise(World world) {
         if (world == null) {
+            return;
+        }
+
+        if (!isWorldEnabled(world)) {
+            plugin.getLogger().warning("Lava rise is not enabled for " + getWorldType(world));
             return;
         }
 

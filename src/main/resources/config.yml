@@ -2,39 +2,67 @@
 # Plugin made by GrayClouds
 
 CONFIG:
-  # How often the lava rises (in seconds)
-  RISE-INTERVAL: 15
-  
-  BORDER:
-    # Initial size of the world border (in blocks)
-    initial-size: 250
-    # Whether the border should shrink over time
-    shrink-enabled: true
-    shrink:
-      # Method of shrinking - currently only TIME is supported
-      method: "TIME"
-      # How often the border shrinks (in seconds)
-      time-interval: 300
-      # How many blocks to shrink by each interval
-      shrink-amount: 50
-      # Smallest size the border can reach
-      minimum-size: 50
-      # Minimum number of players needed for border to shrink
-      players-threshold: 5
-  
-  LAVA:
-    # If true, lava will replace all blocks. If false, only air blocks
-    replace-all-blocks: true
-  
-  BORDER-DAMAGE:
-    # Whether players take damage near the border
-    enabled: true
-    # How close to the border (in blocks) before taking damage
-    damage-radius: 5
-    # Amount of damage dealt per interval
-    damage-amount: 2
-    # How often damage is dealt (in seconds)
-    damage-interval: 1
+  WORLDS:
+    OVERWORLD:
+      enabled: true
+      RISE-INTERVAL: 15
+      BORDER:
+        initial-size: 250
+        shrink-enabled: true
+        shrink:
+          method: "TIME"
+          time-interval: 300
+          shrink-amount: 50
+          minimum-size: 50
+          players-threshold: 5
+      LAVA:
+        replace-all-blocks: true
+      BORDER-DAMAGE:
+        enabled: true
+        damage-radius: 5
+        damage-amount: 2
+        damage-interval: 1
+
+    NETHER:
+      enabled: false  # Toggle nether functionality
+      RISE-INTERVAL: 10  # Faster in nether
+      BORDER:
+        initial-size: 200
+        shrink-enabled: true
+        shrink:
+          method: "TIME"
+          time-interval: 240
+          shrink-amount: 40
+          minimum-size: 40
+          players-threshold: 5
+      LAVA:
+        replace-all-blocks: true
+      BORDER-DAMAGE:
+        enabled: true
+        damage-radius: 5
+        damage-amount: 3  # More damage in nether
+        damage-interval: 1
+
+    END:
+      enabled: false  # Toggle end functionality
+      RISE-INTERVAL: 20  # Slower in end
+      BORDER:
+        initial-size: 300
+        shrink-enabled: true
+        shrink:
+          method: "TIME"
+          time-interval: 360
+          shrink-amount: 60
+          minimum-size: 60
+          players-threshold: 5
+      LAVA:
+        replace-all-blocks: true
+      BORDER-DAMAGE:
+        enabled: true
+        damage-radius: 5
+        damage-amount: 2
+        damage-interval: 1
+
   MESSAGES:
     lava-end: "Lava rise has been ended!"
     lava-start: "Lava rise has started!"

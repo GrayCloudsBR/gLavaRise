@@ -19,19 +19,22 @@ public class BorderDamageHandler {
 
     public static void init(Plugin p) {
         plugin = p;
-        loadConfig();
+        // Initialize with default values for OVERWORLD
+        loadConfig(plugin.getServer().getWorlds().get(0));
         if (enabled) {
             startDamageTask();
         }
     }
 
-    private static void loadConfig() {
+    private static void loadConfig(World world) {
         FileConfiguration config = plugin.getConfig();
-        enabled = config.getBoolean("CONFIG.BORDER-DAMAGE.enabled", true);
-        damageRadius = config.getDouble("CONFIG.BORDER-DAMAGE.damage-radius", 5.0);
-        damageAmount = config.getDouble("CONFIG.BORDER-DAMAGE.damage-amount", 2.0);
-        damageInterval = config.getInt("CONFIG.BORDER-DAMAGE.damage-interval", 1);
-        warningMessage = config.getString("CONFIG.MESSAGES.border-warning", "§cYou're too close to the border!");
+        String worldType = getWorldType(world);
+        String basePath = "CONFIG.WORLDS." + worldType + ".BORDER-DAMAGE";
+        
+        enabled = config.getBoolean(basePath + ".enabled", true);
+        damageRadius = config.getDouble(basePath + ".damage-radius", 5.0);
+        damageAmount = config.getDouble(basePath + ".damage-amount", 2.0);
+        damageInterval = config.getInt(basePath + ".damage-interval", 1);
     }
 
     private static void handlePlayerDeath(Player player) {
@@ -97,9 +100,20 @@ public class BorderDamageHandler {
 
     public static void reload() {
         stop();
-        loadConfig();
+        loadConfig(plugin.getServer().getWorlds().get(0));
         if (enabled) {
             startDamageTask();
+        }
+    }
+
+    private static String getWorldType(World world) {
+        switch (world.getEnvironment()) {
+            case NETHER:
+                return "NETHER";
+            case THE_END:
+                return "END";
+            default:
+                return "OVERWORLD";
         }
     }
 } 
