@@ -5,6 +5,7 @@ import net.grayclouds.gLavaRise.listener.LavaListener;
 import net.grayclouds.gLavaRise.commands.StartCommand;
 import net.grayclouds.gLavaRise.commands.PauseCommand;
 import net.grayclouds.gLavaRise.commands.EndCommand;
+import net.grayclouds.gLavaRise.commands.ReloadCommand;
 import net.grayclouds.gLavaRise.handler.WorldBorderHandler;
 import net.grayclouds.gLavaRise.handler.BorderDamageHandler;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -40,6 +41,7 @@ public final class GLavaRise extends JavaPlugin {
         getCommand("startlava").setExecutor(new StartCommand(lavaListener, this));
         getCommand("pauselava").setExecutor(new PauseCommand(lavaListener, this));
         getCommand("endlava").setExecutor(new EndCommand(lavaListener, this));
+        getCommand("reloadlava").setExecutor(new ReloadCommand(this));
     }
 
     private boolean validateConfig() {

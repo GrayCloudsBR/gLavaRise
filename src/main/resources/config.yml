@@ -84,3 +84,5 @@ CONFIG:
     border-warning: "You are too close to the border!"
     border-shrink-warning: "§cWarning: Border will shrink by %amount% blocks in %time% seconds!"
     player-eliminated: "%player% has been eliminated!"
+    border-minimum: "The border has reached its minimum size!"
+    border-shrink: "The border is shrinking!"

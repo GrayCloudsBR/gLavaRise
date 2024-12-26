@@ -9,6 +9,7 @@ import net.grayclouds.gLavaRise.listener.LavaListener;
 import net.grayclouds.gLavaRise.handler.WorldBorderHandler;
 import org.bukkit.World;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.World.Environment;
 
 public class StartCommand implements CommandExecutor {
     private final LavaListener lavaListener;
@@ -40,11 +41,29 @@ public class StartCommand implements CommandExecutor {
 
         World world = player.getWorld();
         
+        // Validate world type
+        String worldType = getWorldType(world);
+        if (!plugin.getConfig().getBoolean("CONFIG.WORLDS." + worldType + ".enabled", false)) {
+            player.sendMessage("§cThis world type is not enabled in the config!");
+            return true;
+        }
+        
         // Set up world border centered on the player who starts the game
         WorldBorderHandler.setupWorldBorder(world, player.getLocation());
         
         lavaListener.startLavaRise(world);
         player.sendMessage(startMessage);
         return true;
+    }
+
+    private String getWorldType(World world) {
+        switch (world.getEnvironment()) {
+            case NETHER:
+                return "NETHER";
+            case THE_END:
+                return "END";
+            default:
+                return "OVERWORLD";
+        }
     }
 }

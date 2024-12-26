@@ -13,19 +13,21 @@ import org.bukkit.entity.Player;
 public class LavaListener {
     private Plugin plugin;
     private boolean isRising = false;
-    private int currentHeight;
-    private int savedHeight;
-    private int startHeight;
-    private int endHeight;
-    private int riseInterval;
+    private int currentHeight = -64;
+    private int savedHeight = -64;
+    private int startHeight = -64;
+    private int endHeight = 320;
+    private int riseInterval = 15;
     private BukkitRunnable lavaTask;
-    private boolean replaceAllBlocks;
+    private boolean replaceAllBlocks = true;
     private double borderSize;
-    private String riseType;
+    private String riseType = "LAVA";
+    private World currentWorld;
 
     public LavaListener(Plugin plugin) {
         this.plugin = plugin;
-        loadConfig();
+        this.currentWorld = plugin.getServer().getWorlds().get(0);
+        loadWorldConfig(currentWorld);
     }
 
     private boolean isWorldEnabled(World world) {
@@ -46,11 +48,14 @@ public class LavaListener {
 
     private void loadConfig() {
         plugin.saveDefaultConfig();
-        FileConfiguration config = plugin.getConfig();
-        // Remove default world loading here - we'll load per world
     }
 
     private void loadWorldConfig(World world) {
+        if (world == null) {
+            plugin.getLogger().warning("Attempted to load config for null world!");
+            return;
+        }
+
         FileConfiguration config = plugin.getConfig();
         String worldType = getWorldType(world);
         String basePath = "CONFIG.WORLDS." + worldType;
@@ -63,26 +68,34 @@ public class LavaListener {
         this.startHeight = config.getInt(basePath + ".HEIGHT.start", -64);
         this.endHeight = config.getInt(basePath + ".HEIGHT.end", world.getMaxHeight());
         
-        // Initialize current height if not set
-        if (currentHeight < startHeight) {
-            currentHeight = startHeight;
-            savedHeight = startHeight;
-        }
+        // Always set current height to start height when loading config
+        this.currentHeight = this.startHeight;
+        this.savedHeight = this.startHeight;
     }
 
     private void placeRisingBlock(World world, int x, int y, int z) {
-        if (replaceAllBlocks || world.getBlockAt(x, y, z).getType() == Material.AIR) {
-            Material material = riseType.equals("VOID") ? Material.AIR : Material.LAVA;
-            world.getBlockAt(x, y, z).setType(material);
+        try {
+            if (y >= world.getMinHeight() && y <= world.getMaxHeight()) {
+                if (replaceAllBlocks || world.getBlockAt(x, y, z).getType() == Material.AIR) {
+                    Material material = riseType.equals("VOID") ? Material.AIR : Material.LAVA;
+                    world.getBlockAt(x, y, z).setType(material);
+                }
+            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("Error placing block at " + x + "," + y + "," + z + ": " + e.getMessage());
         }
     }
 
     public String getRiseTypeName() {
-        return riseType.equals("VOID") ? "void" : "lava";
+        if (currentWorld != null) {
+            loadWorldConfig(currentWorld);
+        }
+        return (riseType != null && riseType.equals("VOID")) ? "void" : "lava";
     }
 
     private void announceHeight(World world) {
-        String heightMsg = plugin.getConfig().getString("CONFIG.MESSAGES.height-warning", "Current %type% height: %height%")
+        String heightMsg = plugin.getConfig().getString("CONFIG.MESSAGES.height-warning", 
+            "§e[Rise] §fCurrent %type% height: §c%height%")
                 .replace("%height%", String.valueOf(currentHeight))
                 .replace("%type%", getRiseTypeName());
         for (Player player : world.getPlayers()) {
@@ -92,7 +105,9 @@ public class LavaListener {
 
     public void startLavaRise(World world) {
         if (world == null) return;
-
+        
+        this.currentWorld = world;
+        
         if (!isWorldEnabled(world)) {
             plugin.getLogger().warning("Rise is not enabled for " + getWorldType(world));
             return;
@@ -103,11 +118,7 @@ public class LavaListener {
         // Load config for this specific world
         loadWorldConfig(world);
 
-        // Validate height bounds
-        if (currentHeight < startHeight || currentHeight > endHeight) {
-            currentHeight = savedHeight != startHeight ? savedHeight : startHeight;
-        }
-
+        // No need for height validation here since we set it in loadWorldConfig
         borderSize = WorldBorderHandler.getBorderSize(world) / 2;
         if (borderSize <= 0) return;
 
@@ -162,7 +173,10 @@ public class LavaListener {
             lavaTask.cancel();
         }
         isRising = false;
-        currentHeight = startHeight;  // Use configured start height
+        if (currentWorld != null) {
+            loadWorldConfig(currentWorld);
+        }
+        currentHeight = startHeight;
         savedHeight = startHeight;
     }
 

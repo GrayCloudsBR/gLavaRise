@@ -5,17 +5,20 @@ api-version: '1.20'
 
 commands:
   startlava:
-    description: Start the lava rise event
+    description: Start the lava/void rise
     usage: /<command>
     permission: glavarise.start
   pauselava:
-    description: Pause the lava rise event
+    description: Pause the lava/void rise
     usage: /<command>
     permission: glavarise.pause
   endlava:
-    description: End the lava rise event
+    description: End the lava/void rise
     usage: /<command>
     permission: glavarise.end
+  reloadlava:
+    description: Reload the plugin configuration
+    usage: /<command>
 
 permissions:
   glavarise.start:

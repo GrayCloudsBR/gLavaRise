@@ -57,20 +57,7 @@ public class WorldBorderHandler {
         loadConfig(world);
         
         // Validate sizes
-        if (initialSize <= 0) {
-            initialSize = 250; // Default fallback
-        }
-        if (minimumSize <= 0) {
-            minimumSize = 50; // Default fallback
-        }
-        if (shrinkAmount <= 0) {
-            shrinkAmount = 50; // Default fallback
-        }
-
-        // Ensure minimum is not larger than initial
-        if (minimumSize > initialSize) {
-            minimumSize = initialSize;
-        }
+        validateBorderSize(world);
 
         WorldBorder border = world.getWorldBorder();
         
@@ -83,6 +70,18 @@ public class WorldBorderHandler {
         // Only start shrinking if enabled
         if (shrinkEnabled) {
             startBorderShrinking(world);
+        }
+    }
+
+    private static void validateBorderSize(World world) {
+        double maxSize = 29999984; // Minecraft's max world border size
+        if (initialSize <= 0 || initialSize > maxSize) {
+            initialSize = Math.min(250, (int)maxSize);
+            plugin.getLogger().warning("Invalid border size for " + world.getName() + ", setting to: " + initialSize);
+        }
+        if (minimumSize <= 0 || minimumSize > initialSize) {
+            minimumSize = Math.min(50, initialSize);
+            plugin.getLogger().warning("Invalid minimum border size, setting to: " + minimumSize);
         }
     }
 
@@ -112,9 +111,10 @@ public class WorldBorderHandler {
                 if (warningCountdown > 0) {
                     if (warningCountdown == 10 || warningCountdown <= 5) { // Warn at 10, 5, 4, 3, 2, 1 seconds
                         String warningMsg = plugin.getConfig().getString("CONFIG.MESSAGES.border-shrink-warning", 
-                            "§cWarning: Border will shrink by %amount% blocks in %time% seconds!")
+                            "§c[Border] §fWill shrink by §e%amount% §fblocks in §c%time% §fseconds! (Current size: §e%size%§f)")
                             .replace("%amount%", String.valueOf(shrinkAmount))
-                            .replace("%time%", String.valueOf(warningCountdown));
+                            .replace("%time%", String.valueOf(warningCountdown))
+                            .replace("%size%", String.valueOf((int)currentSize));
                         
                         for (Player p : world.getPlayers()) {
                             p.sendMessage(warningMsg);
