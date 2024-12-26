@@ -1,0 +1,29 @@
+name: GLavaRise
+version: '1.0'
+main: net.grayclouds.gLavaRise.GLavaRise
+api-version: '1.20'
+
+commands:
+  startlava:
+    description: Start the lava rise event
+    usage: /<command>
+    permission: glavarise.start
+  pauselava:
+    description: Pause the lava rise event
+    usage: /<command>
+    permission: glavarise.pause
+  endlava:
+    description: End the lava rise event
+    usage: /<command>
+    permission: glavarise.end
+
+permissions:
+  glavarise.start:
+    description: Allows starting the lava rise event
+    default: op
+  glavarise.pause:
+    description: Allows pausing the lava rise event
+    default: op
+  glavarise.end:
+    description: Allows ending the lava rise event
+    default: op

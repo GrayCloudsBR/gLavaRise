@@ -1,0 +1,50 @@
+# gLavaRise config file (config.yml)
+# Plugin made by GrayClouds
+
+CONFIG:
+  # How often the lava rises (in seconds)
+  RISE-INTERVAL: 15
+  
+  BORDER:
+    # Initial size of the world border (in blocks)
+    initial-size: 250
+    # Whether the border should shrink over time
+    shrink-enabled: true
+    shrink:
+      # Method of shrinking - currently only TIME is supported
+      method: "TIME"
+      # How often the border shrinks (in seconds)
+      time-interval: 300
+      # How many blocks to shrink by each interval
+      shrink-amount: 50
+      # Smallest size the border can reach
+      minimum-size: 50
+      # Minimum number of players needed for border to shrink
+      players-threshold: 5
+  
+  LAVA:
+    # If true, lava will replace all blocks. If false, only air blocks
+    replace-all-blocks: true
+  
+  BORDER-DAMAGE:
+    # Whether players take damage near the border
+    enabled: true
+    # How close to the border (in blocks) before taking damage
+    damage-radius: 5
+    # Amount of damage dealt per interval
+    damage-amount: 2
+    # How often damage is dealt (in seconds)
+    damage-interval: 1
+  MESSAGES:
+    lava-end: "Lava rise has been ended!"
+    lava-start: "Lava rise has started!"
+    lava-pause: "Lava rise has been paused!"
+    lava-not-active: "Lava rise is not currently active!"
+    border-shrink: "The border is shrinking!"
+    border-minimum: "The border has reached its minimum size!"
+    height-warning: "Current lava height: %height%"
+    border-warning: "§cYou're too close to the border!"
+    player-only: "This command can only be used by players!"
+    no-permission: "You don't have permission to use this command!"
+    player-eliminated: "%player% has been eliminated!"
+    players-remaining: "%count% players remaining!"
