@@ -8,7 +8,6 @@ net\grayclouds\gLavaRise\handler\WorldBorderHandler.class
 net\grayclouds\gLavaRise\commands\PauseCommand.class
 net\grayclouds\gLavaRise\listener\LavaListener$2.class
 net\grayclouds\gLavaRise\commands\EndCommand.class
-net\grayclouds\gLavaRise\handler\WorldBorderHandler$3.class
 net\grayclouds\gLavaRise\handler\BorderDamageHandler$2.class
 net\grayclouds\gLavaRise\listener\LavaListener$1.class
 net\grayclouds\gLavaRise\handler\WorldBorderHandler$2.class
