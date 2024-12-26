@@ -35,19 +35,15 @@ public class BorderDamageHandler {
         damageRadius = config.getDouble(basePath + ".damage-radius", 5.0);
         damageAmount = config.getDouble(basePath + ".damage-amount", 2.0);
         damageInterval = config.getInt(basePath + ".damage-interval", 1);
+        warningMessage = config.getString("CONFIG.MESSAGES.border-warning", "You are too close to the border!");
     }
 
     private static void handlePlayerDeath(Player player) {
         String eliminatedMsg = plugin.getConfig().getString("CONFIG.MESSAGES.player-eliminated", "%player% has been eliminated!")
                 .replace("%player%", player.getName());
         
-        int playersRemaining = player.getWorld().getPlayers().size() - 1;
-        String remainingMsg = plugin.getConfig().getString("CONFIG.MESSAGES.players-remaining", "%count% players remaining!")
-                .replace("%count%", String.valueOf(playersRemaining));
-        
         for (Player p : plugin.getServer().getOnlinePlayers()) {
             p.sendMessage(eliminatedMsg);
-            p.sendMessage(remainingMsg);
         }
     }
 
