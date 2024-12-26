@@ -19,6 +19,7 @@ public class LavaListener {
     private BukkitRunnable lavaTask;
     private boolean replaceAllBlocks;
     private double borderSize;
+    private String riseType;
 
     public LavaListener(Plugin plugin) {
         this.plugin = plugin;
@@ -44,16 +45,29 @@ public class LavaListener {
     private void loadConfig() {
         plugin.saveDefaultConfig();
         FileConfiguration config = plugin.getConfig();
-        // Use default world for initial config load
         World defaultWorld = plugin.getServer().getWorlds().get(0);
         String worldType = getWorldType(defaultWorld);
-        this.riseInterval = config.getInt("CONFIG.WORLDS." + worldType + ".RISE-INTERVAL", 15);
-        this.replaceAllBlocks = config.getBoolean("CONFIG.WORLDS." + worldType + ".LAVA.replace-all-blocks", true);
+        String basePath = "CONFIG.WORLDS." + worldType;
+        this.riseInterval = config.getInt(basePath + ".RISE-INTERVAL", 15);
+        this.replaceAllBlocks = config.getBoolean(basePath + ".BLOCK-SETTINGS.replace-all-blocks", true);
+        this.riseType = config.getString(basePath + ".RISE-TYPE", "LAVA");
+    }
+
+    private void placeRisingBlock(World world, int x, int y, int z) {
+        if (replaceAllBlocks || world.getBlockAt(x, y, z).getType() == Material.AIR) {
+            Material material = riseType.equals("VOID") ? Material.AIR : Material.LAVA;
+            world.getBlockAt(x, y, z).setType(material);
+        }
+    }
+
+    private String getRiseTypeName() {
+        return riseType.equals("VOID") ? "void" : "lava";
     }
 
     private void announceHeight(World world) {
-        String heightMsg = plugin.getConfig().getString("CONFIG.MESSAGES.height-warning", "Current lava height: %height%")
-                .replace("%height%", String.valueOf(currentHeight));
+        String heightMsg = plugin.getConfig().getString("CONFIG.MESSAGES.height-warning", "Current %type% height: %height%")
+                .replace("%height%", String.valueOf(currentHeight))
+                .replace("%type%", getRiseTypeName());
         for (Player player : world.getPlayers()) {
             player.sendMessage(heightMsg);
         }

@@ -72,15 +72,21 @@ public final class GLavaRise extends JavaPlugin {
             needsSave = true;
         }
 
+        if (!config.isString(basePath + ".RISE-TYPE")) {
+            getLogger().warning("Missing RISE-TYPE, setting default: LAVA");
+            config.set(basePath + ".RISE-TYPE", "LAVA");
+            needsSave = true;
+        }
+
         // Validate BORDER section
         if (!config.isConfigurationSection(basePath + ".BORDER")) {
             getLogger().severe("Missing BORDER section!");
             return false;
         }
 
-        // Validate LAVA section
-        if (!config.isConfigurationSection(basePath + ".LAVA")) {
-            getLogger().severe("Missing LAVA section!");
+        // Validate BLOCK-SETTINGS section
+        if (!config.isConfigurationSection(basePath + ".BLOCK-SETTINGS")) {
+            getLogger().severe("Missing BLOCK-SETTINGS section!");
             return false;
         }
 
