@@ -6,6 +6,7 @@ import org.bukkit.WorldBorder;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 
 public class WorldBorderHandler {
     private static Plugin plugin;
@@ -90,47 +91,56 @@ public class WorldBorderHandler {
             shrinkTask.cancel();
         }
 
-        if (shrinkMethod.equalsIgnoreCase("TIME")) {
-            shrinkTask = new BukkitRunnable() {
-                @Override
-                public void run() {
-                    shrinkBorder(world);
-                }
-            };
-            shrinkTask.runTaskTimer(plugin, timeInterval * 20L, timeInterval * 20L);
-        } else if (shrinkMethod.equalsIgnoreCase("PLAYERS")) {
-            // Check player count every 20 ticks (1 second)
-            shrinkTask = new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if (world.getPlayers().size() <= playersThreshold) {
-                        shrinkBorder(world);
+        shrinkTask = new BukkitRunnable() {
+            private int warningCountdown = 10; // 10 second warning
+
+            @Override
+            public void run() {
+                WorldBorder border = world.getWorldBorder();
+                double currentSize = border.getSize();
+
+                if (currentSize <= minimumSize) {
+                    String minMessage = plugin.getConfig().getString("CONFIG.MESSAGES.border-minimum", "The border has reached its minimum size!");
+                    for (Player p : world.getPlayers()) {
+                        p.sendMessage(minMessage);
                     }
+                    this.cancel();
+                    return;
                 }
-            };
-            shrinkTask.runTaskTimer(plugin, 20L, 20L);
-        }
-    }
 
-    private static void shrinkBorder(World world) {
-        WorldBorder border = world.getWorldBorder();
-        double currentSize = border.getSize();
-        double newSize = Math.max(minimumSize, currentSize - shrinkAmount);  // Remove the * 2
-        
-        if (newSize < currentSize) {
-            if (newSize <= minimumSize) {  // Remove the * 2
-                String minMsg = plugin.getConfig().getString("CONFIG.MESSAGES.border-minimum", "The border has reached its minimum size!");
-                world.getPlayers().forEach(p -> p.sendMessage(minMsg));
-                return;
+                // Warning countdown
+                if (warningCountdown > 0) {
+                    if (warningCountdown == 10 || warningCountdown <= 5) { // Warn at 10, 5, 4, 3, 2, 1 seconds
+                        String warningMsg = plugin.getConfig().getString("CONFIG.MESSAGES.border-shrink-warning", 
+                            "§cWarning: Border will shrink by %amount% blocks in %time% seconds!")
+                            .replace("%amount%", String.valueOf(shrinkAmount))
+                            .replace("%time%", String.valueOf(warningCountdown));
+                        
+                        for (Player p : world.getPlayers()) {
+                            p.sendMessage(warningMsg);
+                        }
+                    }
+                    warningCountdown--;
+                    return;
+                }
+
+                // Reset warning countdown for next shrink
+                warningCountdown = 10;
+
+                // Shrink the border
+                double newSize = Math.max(currentSize - shrinkAmount, minimumSize);
+                border.setSize(newSize, 2); // Smooth transition over 2 seconds
+
+                // Announce shrinking
+                String shrinkMsg = plugin.getConfig().getString("CONFIG.MESSAGES.border-shrink", "The border is shrinking!");
+                for (Player p : world.getPlayers()) {
+                    p.sendMessage(shrinkMsg);
+                }
             }
+        };
 
-            String shrinkMsg = shrinkMethod.equalsIgnoreCase("PLAYERS") 
-                ? plugin.getConfig().getString("CONFIG.MESSAGES.border-shrink-players", "Player count threshold reached! The border is shrinking!")
-                : plugin.getConfig().getString("CONFIG.MESSAGES.border-shrink", "The border is shrinking!");
-            
-            world.getPlayers().forEach(p -> p.sendMessage(shrinkMsg));
-            border.setSize(newSize, 10);
-        }
+        // Run task every timeInterval seconds
+        shrinkTask.runTaskTimer(plugin, timeInterval * 20L, timeInterval * 20L);
     }
 
     public static void stop() {

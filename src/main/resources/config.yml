@@ -5,8 +5,8 @@ CONFIG:
   WORLDS:
     OVERWORLD:
       enabled: true
-      RISE-INTERVAL: 5
-      RISE-TYPE: "VOID"  # Can be "LAVA" or "VOID"
+      RISE-INTERVAL: 15
+      RISE-TYPE: "LAVA"  # Can be "LAVA" or "VOID"
       HEIGHT:
         start: -64
         end: 320
@@ -29,7 +29,7 @@ CONFIG:
 
     NETHER:
       enabled: false
-      RISE-INTERVAL: 10
+      RISE-INTERVAL: 15
       RISE-TYPE: "LAVA"  # Can be "LAVA" or "VOID"
       HEIGHT:
         start: 0
@@ -82,4 +82,5 @@ CONFIG:
     lava-not-active: "The %type% rise is not currently active!"
     height-warning: "Current %type% height: %height%"
     border-warning: "You are too close to the border!"
+    border-shrink-warning: "§cWarning: Border will shrink by %amount% blocks in %time% seconds!"
     player-eliminated: "%player% has been eliminated!"
