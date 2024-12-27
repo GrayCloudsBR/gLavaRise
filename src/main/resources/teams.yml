@@ -1,19 +1,17 @@
 TEAMS:
   enabled: true
   friendly-fire: false
-  auto-balance: true
-  min-players-per-team: 1
   max-players-per-team: 4
   list:
     red:
-      display-name: "Red Team"
+      display-name: "§cRed Team"
       color: RED
     blue:
-      display-name: "Blue Team"
+      display-name: "§9Blue Team"
       color: BLUE
     green:
-      display-name: "Green Team"
+      display-name: "§aGreen Team"
       color: GREEN
     yellow:
-      display-name: "Yellow Team"
+      display-name: "§eYellow Team"
       color: YELLOW 

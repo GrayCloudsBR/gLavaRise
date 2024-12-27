@@ -2,10 +2,23 @@ WORLDS:
   OVERWORLD:
     enabled: true
     RISE-INTERVAL: 15
+    RISE-TYPE: LAVA
     HEIGHT:
       start: -64
       end: 320
       announcement-interval: 5
+    BORDER:
+      initial-size: 200
+      shrink-enabled: true
+      shrink:
+        time-interval: 300
+        shrink-amount: 50
+        minimum-size: 50
+      damage:
+        enabled: true
+        amount: 2.0
+        radius: 5
+        interval: 1
     environment:
       time: 6000
       weather: clear
@@ -21,22 +34,12 @@ WORLDS:
       seed: ""
       void: false
       flat: false
-      generator-settings: ""
     spawn:
       spread-players: true
       radius: 50
       min-y: 64
       max-y: 100
       safe-location: true
-    effects:
-      enabled: false
-      list:
-        - effect: SPEED
-          amplifier: 0
-          duration: -1
-        - effect: JUMP
-          amplifier: 0
-          duration: -1
 
   NETHER:
     enabled: false
@@ -50,19 +53,15 @@ WORLDS:
       initial-size: 200
       shrink-enabled: true
       shrink:
-        method: TIME
         time-interval: 240
         shrink-amount: 40
         minimum-size: 40
-        players-threshold: 5
-    BLOCK-SETTINGS:
-      replace-all-blocks: true
-    BORDER-DAMAGE:
-      enabled: true
-      damage-radius: 5
-      damage-amount: 3
-      damage-interval: 1
-  
+      damage:
+        enabled: true
+        amount: 3.0
+        radius: 5
+        interval: 1
+
   END:
     enabled: false
     RISE-INTERVAL: 15
@@ -75,15 +74,11 @@ WORLDS:
       initial-size: 300
       shrink-enabled: true
       shrink:
-        method: TIME
         time-interval: 360
         shrink-amount: 60
         minimum-size: 60
-        players-threshold: 5
-    BLOCK-SETTINGS:
-      replace-all-blocks: true
-    BORDER-DAMAGE:
-      enabled: true
-      damage-radius: 5
-      damage-amount: 2
-      damage-interval: 1 
+      damage:
+        enabled: true
+        amount: 2.0
+        radius: 5
+        interval: 1 
