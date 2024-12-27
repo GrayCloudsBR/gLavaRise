@@ -70,7 +70,7 @@ public class StartCommand implements CommandExecutor {
         }
 
         try {
-            WorldBorderHandler.setupWorldBorder(newWorld, newWorld.getSpawnLocation());
+            WorldBorderHandler.setupWorldBorder(newWorld);
             gameStateManager.startGame(newWorld);
             lavaListener.startLavaRise(newWorld);
             ((GLavaRise)plugin).getWinConditionManager().startChecking();
