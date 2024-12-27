@@ -1,6 +1,8 @@
+net\grayclouds\gLavaRise\manager\AutoStartManager.class
+net\grayclouds\gLavaRise\listener\PlayerJoinQuitListener.class
+net\grayclouds\gLavaRise\manager\EffectManager.class
 net\grayclouds\gLavaRise\GLavaRise.class
 net\grayclouds\gLavaRise\handler\BorderDamageHandler.class
-net\grayclouds\gLavaRise\handler\BorderDamageHandler$1.class
 net\grayclouds\gLavaRise\handler\WorldBorderHandler$1.class
 net\grayclouds\gLavaRise\listener\LavaListener.class
 net\grayclouds\gLavaRise\events\GameStartEvent.class
@@ -9,7 +11,6 @@ net\grayclouds\gLavaRise\commands\ReloadCommand.class
 net\grayclouds\gLavaRise\manager\RespawnManager.class
 net\grayclouds\gLavaRise\handler\WorldBorderHandler.class
 net\grayclouds\gLavaRise\events\GamePauseEvent.class
-net\grayclouds\gLavaRise\commands\StartCommand$1.class
 net\grayclouds\gLavaRise\manager\ConfigManager$1.class
 net\grayclouds\gLavaRise\listener\GameEventListener.class
 net\grayclouds\gLavaRise\events\PlayerWinEvent.class
@@ -18,6 +19,7 @@ net\grayclouds\gLavaRise\handler\WorldBorderHandler$2.class
 net\grayclouds\gLavaRise\manager\GameStateManager.class
 net\grayclouds\gLavaRise\events\PlayerEliminationEvent.class
 net\grayclouds\gLavaRise\manager\TitleManager.class
+net\grayclouds\gLavaRise\manager\GameplayManager.class
 net\grayclouds\gLavaRise\manager\ConfigManager.class
 net\grayclouds\gLavaRise\manager\PlayerManager.class
 net\grayclouds\gLavaRise\manager\ScoreboardManager.class
@@ -30,3 +32,4 @@ net\grayclouds\gLavaRise\manager\SoundManager.class
 net\grayclouds\gLavaRise\listener\LavaListener$1.class
 net\grayclouds\gLavaRise\manager\ConfigManager$WorldConfig.class
 net\grayclouds\gLavaRise\commands\TeamCommand.class
+net\grayclouds\gLavaRise\manager\WorldManager.class

@@ -31,7 +31,7 @@ public class RespawnManager {
 
     public boolean handleDeath(Player player) {
         if (!respawnEnabled) {
-            playerManager.eliminatePlayer(player);
+            playerManager.removePlayer(player.getUniqueId());
             return false;
         }
 
@@ -40,7 +40,7 @@ public class RespawnManager {
         lives.put(playerId, remainingLives);
 
         if (remainingLives <= 0) {
-            playerManager.eliminatePlayer(player);
+            playerManager.removePlayer(player.getUniqueId());
             return false;
         } else {
             respawnPlayer(player);

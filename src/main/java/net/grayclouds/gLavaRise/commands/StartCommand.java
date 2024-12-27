@@ -50,32 +50,31 @@ public class StartCommand implements CommandExecutor {
             return true;
         }
 
-        World world = player.getWorld();
-        String worldType = getWorldType(world);
-        
-        // Validate world configuration
-        if (!config.getBoolean("CONFIG.WORLDS." + worldType + ".enabled", false)) {
-            player.sendMessage("§cThis world type is not enabled in the config!");
-            return true;
-        }
-
         if (gameStateManager.isGameRunning()) {
             player.sendMessage("§cA game is already in progress!");
             return true;
         }
 
-        // Reset player manager and add all players in the world
+        // Create new game world
+        World newWorld = ((GLavaRise)plugin).getWorldManager().createNewGameWorld();
+        if (newWorld == null) {
+            player.sendMessage("§cFailed to create game world!");
+            return true;
+        }
+
+        // Reset player manager and add all players in the current world
         playerManager.reset();
-        for (Player p : world.getPlayers()) {
-            playerManager.addPlayer(p);
+        for (Player p : player.getWorld().getPlayers()) {
+            playerManager.addPlayer(p.getUniqueId());
+            p.teleport(newWorld.getSpawnLocation());
         }
 
         try {
-            WorldBorderHandler.setupWorldBorder(world, player.getLocation());
-            gameStateManager.startGame(world);
-            lavaListener.startLavaRise(world);
+            WorldBorderHandler.setupWorldBorder(newWorld, newWorld.getSpawnLocation());
+            gameStateManager.startGame(newWorld);
+            lavaListener.startLavaRise(newWorld);
             ((GLavaRise)plugin).getWinConditionManager().startChecking();
-            plugin.getServer().getPluginManager().callEvent(new GameStartEvent(world));
+            plugin.getServer().getPluginManager().callEvent(new GameStartEvent(newWorld));
             
             String startMessage = config.getString("CONFIG.MESSAGES.lava-start", "The %type% is now rising!")
                 .replace("%type%", lavaListener.getRiseTypeName());
@@ -88,16 +87,5 @@ public class StartCommand implements CommandExecutor {
         }
         
         return true;
-    }
-
-    private String getWorldType(World world) {
-        switch (world.getEnvironment()) {
-            case NETHER:
-                return "NETHER";
-            case THE_END:
-                return "END";
-            default:
-                return "OVERWORLD";
-        }
     }
 }

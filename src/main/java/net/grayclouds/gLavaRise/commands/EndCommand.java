@@ -9,8 +9,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import net.grayclouds.gLavaRise.events.GameEndEvent;
-import org.bukkit.World;
 import net.grayclouds.gLavaRise.GLavaRise;
+import org.bukkit.World;
 
 public class EndCommand implements CommandExecutor {
     private final LavaListener lavaListener;
@@ -45,22 +45,21 @@ public class EndCommand implements CommandExecutor {
             return true;
         }
 
-        // End the game
-        if (gameStateManager.endGame()) {
-            World world = gameStateManager.getActiveWorld();
-            lavaListener.resetLavaRise();
-            playerManager.reset();
-            
-            // Call game end event
-            plugin.getServer().getPluginManager().callEvent(new GameEndEvent(world));
-            
-            player.sendMessage("§aGame ended successfully!");
-        } else {
-            player.sendMessage("§cFailed to end the game!");
-        }
+        // Get world reference before ending game
+        World world = gameStateManager.getActiveWorld();
+        
+        // Call game end event first
+        plugin.getServer().getPluginManager().callEvent(new GameEndEvent(world));
+        
+        // Then end the game
+        gameStateManager.endGame();
+        lavaListener.resetLavaRise();
+        playerManager.reset();
+        
+        player.sendMessage("§aGame ended successfully!");
 
-        // When ending game
-        ((GLavaRise)plugin).getWinConditionManager().stop();
+        // Stop win condition checking
+        ((GLavaRise)plugin).getWinConditionManager().stopChecking();
 
         return true;
     }

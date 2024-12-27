@@ -14,7 +14,11 @@ C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\han
 C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\listener\GameEventListener.java
 C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\listener\LavaListener.java
 C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\listener\PlayerDeathListener.java
+C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\listener\PlayerJoinQuitListener.java
+C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\manager\AutoStartManager.java
 C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\manager\ConfigManager.java
+C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\manager\EffectManager.java
+C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\manager\GameplayManager.java
 C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\manager\GameStateManager.java
 C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\manager\PlayerManager.java
 C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\manager\RespawnManager.java
@@ -23,3 +27,4 @@ C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\man
 C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\manager\TeamManager.java
 C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\manager\TitleManager.java
 C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\manager\WinConditionManager.java
+C:\Users\grayc\IdeaProjects\gLavaRise\src\main\java\net\grayclouds\gLavaRise\manager\WorldManager.java

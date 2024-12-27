@@ -20,6 +20,9 @@ public final class GLavaRise extends JavaPlugin {
     private WinConditionManager winConditionManager;
     private TeamManager teamManager;
     private RespawnManager respawnManager;
+    private WorldManager worldManager;
+    private EffectManager effectManager;
+    private GameplayManager gameplayManager;
 
     @Override
     public void onEnable() {
@@ -34,8 +37,9 @@ public final class GLavaRise extends JavaPlugin {
         WorldBorderHandler.init(this);
         configManager = new ConfigManager(this);
         playerManager = new PlayerManager(this);
-        BorderDamageHandler.init(this, playerManager);
+        BorderDamageHandler.init(this);
 
+        worldManager = new WorldManager(this, configManager);
         gameStateManager = new GameStateManager(this);
         teamManager = new TeamManager(this);
         respawnManager = new RespawnManager(this, playerManager);
@@ -43,6 +47,8 @@ public final class GLavaRise extends JavaPlugin {
         soundManager = new SoundManager(this);
         titleManager = new TitleManager(this);
         scoreboardManager = new ScoreboardManager(this, playerManager, gameStateManager);
+        effectManager = new EffectManager(this, configManager);
+        gameplayManager = new GameplayManager(this, configManager, gameStateManager);
         lavaListener = new LavaListener(this, configManager, gameStateManager, playerManager);
         
         // Register commands
@@ -56,12 +62,14 @@ public final class GLavaRise extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerDeathListener(this), this);
         getServer().getPluginManager().registerEvents(new GameEventListener(this, soundManager, titleManager, scoreboardManager), this);
         getServer().getPluginManager().registerEvents(lavaListener, this);
+        getServer().getPluginManager().registerEvents(gameplayManager, this);
     }
 
     @Override
     public void onDisable() {
         if (gameStateManager.isGameRunning()) {
             lavaListener.resetLavaRise();
+            worldManager.teleportToLobby(getServer().getOnlinePlayers());
         }
         BorderDamageHandler.stop();
         WorldBorderHandler.stop();
@@ -106,6 +114,18 @@ public final class GLavaRise extends JavaPlugin {
 
     public LavaListener getLavaListener() {
         return lavaListener;
+    }
+
+    public WorldManager getWorldManager() {
+        return worldManager;
+    }
+
+    public EffectManager getEffectManager() {
+        return effectManager;
+    }
+
+    public GameplayManager getGameplayManager() {
+        return gameplayManager;
     }
 
     private boolean validateConfig() {

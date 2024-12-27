@@ -44,17 +44,15 @@ public class PauseCommand implements CommandExecutor {
         }
 
         if (gameStateManager.isPaused()) {
-            if (gameStateManager.resumeGame()) {
-                lavaListener.resumeLavaRise();
-                String resumeMessage = configManager.getConfig("messages.yml").getString("MESSAGES.game-resumed", "Game has been resumed!");
-                player.sendMessage(resumeMessage);
-            }
+            gameStateManager.resumeGame();
+            lavaListener.resumeLavaRise();
+            String resumeMessage = configManager.getConfig("messages.yml").getString("MESSAGES.game-resumed", "Game has been resumed!");
+            player.sendMessage(resumeMessage);
         } else {
-            if (gameStateManager.pauseGame()) {
-                lavaListener.pauseLavaRise();
-                String pauseMessage = configManager.getConfig("messages.yml").getString("MESSAGES.game-paused", "Game has been paused!");
-                player.sendMessage(pauseMessage);
-            }
+            gameStateManager.pauseGame();
+            lavaListener.pauseLavaRise();
+            String pauseMessage = configManager.getConfig("messages.yml").getString("MESSAGES.game-paused", "Game has been paused!");
+            player.sendMessage(pauseMessage);
         }
 
         return true;

@@ -1,15 +1,14 @@
 package net.grayclouds.gLavaRise.manager;
 
+import net.grayclouds.gLavaRise.GLavaRise;
+import net.grayclouds.gLavaRise.listener.LavaListener;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.*;
-import java.util.List;
-import net.kyori.adventure.text.Component;
-import org.bukkit.scoreboard.Criteria;
-import java.util.Arrays;
-import net.grayclouds.gLavaRise.GLavaRise;
 import org.bukkit.scheduler.BukkitTask;
+import net.kyori.adventure.text.Component;
 
 public class ScoreboardManager {
     private final Plugin plugin;
@@ -26,26 +25,23 @@ public class ScoreboardManager {
     }
 
     public void setupScoreboard() {
-        // Create new scoreboard
-        this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-        
-        if (objective != null) {
-            objective.unregister();
+        if (scoreboard != null) {
+            scoreboard.getObjectives().forEach(obj -> obj.unregister());
         }
-
-        String title = plugin.getConfig().getString("CONFIG.WORLDS.OVERWORLD.SCOREBOARD.title", "§6§lLava Rise");
-        objective = scoreboard.registerNewObjective("lavarise", Criteria.DUMMY, Component.text(title));
+        
+        scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+        objective = scoreboard.registerNewObjective("lavarise", Criteria.DUMMY, Component.text("§6§lLava Rise"));
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+        
+        // Apply to all online players
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.setScoreboard(scoreboard);
+        }
         
         // Initial update
         updateScoreboard();
         
-        // Set scoreboard for all players
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            player.setScoreboard(scoreboard);
-        }
-
-        // Start update task
+        // Start regular updates
         if (updateTask != null) {
             updateTask.cancel();
         }
@@ -58,62 +54,54 @@ public class ScoreboardManager {
             updateTask = null;
         }
         
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+        // Clear all scores first
+        if (scoreboard != null) {
+            for (String entry : scoreboard.getEntries()) {
+                scoreboard.resetScores(entry);
+            }
         }
+        
+        // Reset players to main scoreboard
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+        }
+
+        // Clean up objective and scoreboard
         if (objective != null) {
             objective.unregister();
             objective = null;
         }
+        scoreboard = null;
     }
 
     public void updateScoreboard() {
-        if (objective == null || !gameStateManager.isGameRunning()) {
-            return;
-        }
-
-        // Clear existing scores
+        if (scoreboard == null || !gameStateManager.isGameRunning()) return;
+        
+        // Clear all existing scores first
         for (String entry : scoreboard.getEntries()) {
             scoreboard.resetScores(entry);
         }
 
-        List<String> lines = plugin.getConfig().getStringList("CONFIG.WORLDS.OVERWORLD.SCOREBOARD.lines");
-        if (lines.isEmpty()) {
-            lines = getDefaultLines();
+        Objective objective = scoreboard.getObjective("lavarise");
+        if (objective == null) {
+            setupScoreboard();
+            objective = scoreboard.getObjective("lavarise");
         }
 
-        int score = lines.size();
-        for (String line : lines) {
-            String updatedLine = replacePlaceholders(line);
-            objective.getScore(updatedLine).setScore(score--);
-        }
-    }
-
-    private List<String> getDefaultLines() {
-        return Arrays.asList(
-            "§7§m----------------",
-            "§fPlayers Alive: §a%alive%",
-            "§fCurrent Height: §e%height%",
-            "§fBorder: §c%border%",
-            "§fTime: §b%time%",
-            "§7§m----------------"
-        );
-    }
-
-    private String formatTime(int seconds) {
-        int minutes = seconds / 60;
-        int remainingSeconds = seconds % 60;
-        return String.format("%02d:%02d", minutes, remainingSeconds);
-    }
-
-    private String replacePlaceholders(String line) {
-        int currentHeight = ((GLavaRise)plugin).getLavaListener().getCurrentHeight();
-        double borderSize = gameStateManager.getActiveWorld() != null ? 
-            gameStateManager.getActiveWorld().getWorldBorder().getSize() : 0;
+        World gameWorld = gameStateManager.getActiveWorld();
+        if (gameWorld != null) {
+            LavaListener lavaListener = ((GLavaRise)plugin).getLavaListener();
             
-        return line.replace("%alive%", String.valueOf(playerManager.getAlivePlayerCount()))
-                  .replace("%height%", String.valueOf(currentHeight))
-                  .replace("%border%", String.format("%.1f", borderSize))
-                  .replace("%time%", formatTime(gameStateManager.getGameTime()));
+            objective.getScore("§7§m----------------").setScore(7);
+            objective.getScore("§fPlayers Alive: §a" + playerManager.getAlivePlayers().size()).setScore(6);
+            objective.getScore("§fCurrent Height: §c" + lavaListener.getCurrentHeight()).setScore(5);
+            objective.getScore("§fBorder: §c" + (int)gameWorld.getWorldBorder().getSize()).setScore(4);
+            objective.getScore("§7§m----------------").setScore(3);
+            
+            long gameTime = gameStateManager.getGameTime();
+            String timeStr = String.format("%02d:%02d", gameTime / 60, gameTime % 60);
+            objective.getScore("§fTime: §e" + timeStr).setScore(2);
+            objective.getScore("§7§m----------------").setScore(1);
+        }
     }
 } 

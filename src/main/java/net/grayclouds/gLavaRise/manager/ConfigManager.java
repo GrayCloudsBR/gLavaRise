@@ -30,13 +30,23 @@ public class ConfigManager {
     public void reload() {
         // Save default configs if they don't exist
         for (String fileName : configFiles) {
-            plugin.saveResource(fileName, false);
+            try {
+                if (!new File(plugin.getDataFolder(), fileName).exists()) {
+                    plugin.saveResource(fileName, false);
+                }
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Could not save " + fileName + ": " + e.getMessage());
+            }
         }
 
         // Load all configs
         for (String fileName : configFiles) {
             File configFile = new File(plugin.getDataFolder(), fileName);
-            configs.put(fileName, YamlConfiguration.loadConfiguration(configFile));
+            if (configFile.exists()) {
+                configs.put(fileName, YamlConfiguration.loadConfiguration(configFile));
+            } else {
+                plugin.getLogger().warning("Config file " + fileName + " not found!");
+            }
         }
     }
 
