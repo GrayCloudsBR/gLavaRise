@@ -6,7 +6,7 @@
 
     <groupId>net.grayclouds</groupId>
     <artifactId>gLavaRise</artifactId>
-    <version>v1.3</version>
+    <version>v2.0</version>
     <packaging>jar</packaging>
 
     <name>gLavaRise</name>
