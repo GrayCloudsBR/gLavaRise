@@ -4,25 +4,22 @@ import org.bukkit.World;
 import org.bukkit.Location;
 import org.bukkit.WorldBorder;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 public class WorldBorderHandler {
     private static Plugin plugin;
-    private static BukkitRunnable shrinkTask;
+    private static BukkitTask borderTask;
     private static int initialSize;
     private static int shrinkAmount;
     private static int minimumSize;
-    private static String shrinkMethod;
     private static int timeInterval;
-    private static int playersThreshold;
     private static boolean shrinkEnabled;
     
-    public static void init(Plugin p) {
-        plugin = p;
-        // Initialize with default values for OVERWORLD
-        loadConfig(plugin.getServer().getWorlds().get(0));
+    public static void init(Plugin plugin) {
+        WorldBorderHandler.plugin = plugin;
     }
 
     private static void loadConfig(World world) {
@@ -34,9 +31,7 @@ public class WorldBorderHandler {
         shrinkEnabled = config.getBoolean(basePath + ".shrink-enabled", true);
         shrinkAmount = config.getInt(basePath + ".shrink.shrink-amount", 50);
         minimumSize = config.getInt(basePath + ".shrink.minimum-size", 50);
-        shrinkMethod = config.getString(basePath + ".shrink.method", "TIME");
         timeInterval = config.getInt(basePath + ".shrink.time-interval", 300);
-        playersThreshold = config.getInt(basePath + ".shrink.players-threshold", 5);
     }
 
     private static String getWorldType(World world) {
@@ -51,7 +46,11 @@ public class WorldBorderHandler {
     }
 
     public static void setupWorldBorder(World world, Location center) {
-        if (world == null || center == null) return;
+        if (plugin == null) {
+            throw new IllegalStateException("WorldBorderHandler not initialized!");
+        }
+        
+        if (world == null) return;
 
         // Load config for this specific world
         loadConfig(world);
@@ -60,10 +59,10 @@ public class WorldBorderHandler {
         validateBorderSize(world);
 
         WorldBorder border = world.getWorldBorder();
+        border.setCenter(center);
         
         // Set border size (no need to multiply by 2)
         border.setSize(initialSize);  // Remove the * 2
-        border.setCenter(center);
         border.setWarningDistance(10);
         border.setWarningTime(5);
 
@@ -86,22 +85,31 @@ public class WorldBorderHandler {
     }
 
     private static void startBorderShrinking(World world) {
-        if (shrinkTask != null) {
-            shrinkTask.cancel();
+        if (borderTask != null) {
+            borderTask.cancel();
         }
 
-        shrinkTask = new BukkitRunnable() {
-            private int warningCountdown = 10; // 10 second warning
+        // Validate shrink settings
+        if (shrinkAmount <= 0 || timeInterval <= 0) {
+            plugin.getLogger().warning("Invalid shrink settings! Disabling border shrinking.");
+            return;
+        }
+
+        borderTask = new BukkitRunnable() {
+            private int warningCountdown = 10;
 
             @Override
             public void run() {
                 WorldBorder border = world.getWorldBorder();
                 double currentSize = border.getSize();
 
+                // Don't shrink if below minimum
                 if (currentSize <= minimumSize) {
-                    String minMessage = plugin.getConfig().getString("CONFIG.MESSAGES.border-minimum", "The border has reached its minimum size!");
-                    for (Player p : world.getPlayers()) {
-                        p.sendMessage(minMessage);
+                    String minMessage = plugin.getConfig().getString("CONFIG.MESSAGES.border-minimum");
+                    if (minMessage != null) {
+                        for (Player p : world.getPlayers()) {
+                            p.sendMessage(minMessage);
+                        }
                     }
                     this.cancel();
                     return;
@@ -109,9 +117,9 @@ public class WorldBorderHandler {
 
                 // Warning countdown
                 if (warningCountdown > 0) {
-                    if (warningCountdown == 10 || warningCountdown <= 5) { // Warn at 10, 5, 4, 3, 2, 1 seconds
+                    if (warningCountdown == 10 || warningCountdown <= 5) {
                         String warningMsg = plugin.getConfig().getString("CONFIG.MESSAGES.border-shrink-warning", 
-                            "§c[Border] §fWill shrink by §e%amount% §fblocks in §c%time% §fseconds! (Current size: §e%size%§f)")
+                            "§cWarning: Border will shrink by %amount% blocks in %time% seconds!")
                             .replace("%amount%", String.valueOf(shrinkAmount))
                             .replace("%time%", String.valueOf(warningCountdown))
                             .replace("%size%", String.valueOf((int)currentSize));
@@ -127,26 +135,27 @@ public class WorldBorderHandler {
                 // Reset warning countdown for next shrink
                 warningCountdown = 10;
 
-                // Shrink the border
+                // Calculate new size with validation
                 double newSize = Math.max(currentSize - shrinkAmount, minimumSize);
-                border.setSize(newSize, 2); // Smooth transition over 2 seconds
+                if (newSize != currentSize) {
+                    border.setSize(newSize, 2); // 2-second transition
 
-                // Announce shrinking
-                String shrinkMsg = plugin.getConfig().getString("CONFIG.MESSAGES.border-shrink", "The border is shrinking!");
-                for (Player p : world.getPlayers()) {
-                    p.sendMessage(shrinkMsg);
+                    // Announce shrinking
+                    String shrinkMsg = plugin.getConfig().getString("CONFIG.MESSAGES.border-shrink");
+                    if (shrinkMsg != null) {
+                        for (Player p : world.getPlayers()) {
+                            p.sendMessage(shrinkMsg);
+                        }
+                    }
                 }
             }
-        };
-
-        // Run task every timeInterval seconds
-        shrinkTask.runTaskTimer(plugin, timeInterval * 20L, timeInterval * 20L);
+        }.runTaskTimer(plugin, 0L, timeInterval * 20L);  // Convert seconds to ticks (20 ticks = 1 second)
     }
 
     public static void stop() {
-        if (shrinkTask != null) {
-            shrinkTask.cancel();
-            shrinkTask = null;
+        if (borderTask != null) {
+            borderTask.cancel();
+            borderTask = null;
         }
     }
 
@@ -156,5 +165,16 @@ public class WorldBorderHandler {
 
     public static Location getCenter(World world) {
         return world.getWorldBorder().getCenter();
+    }
+
+    public static boolean isLocationWithinBorder(Location location) {
+        if (location == null || location.getWorld() == null) return false;
+        
+        WorldBorder border = location.getWorld().getWorldBorder();
+        Location center = border.getCenter();
+        double size = border.getSize() / 2;
+        double x = location.getX() - center.getX();
+        double z = location.getZ() - center.getZ();
+        return Math.abs(x) <= size && Math.abs(z) <= size;
     }
 }

@@ -1,0 +1,117 @@
+WORLDS:
+  OVERWORLD:
+    enabled: true
+    RISE-INTERVAL: 15
+    RISE-TYPE: LAVA # Can be "LAVA" or "VOID"
+    HEIGHT:
+      start: -64
+      current: -64
+      end: 320
+      announcement-interval: 5
+    BORDER:
+      initial-size: 250
+      shrink-enabled: true
+      shrink:
+        method: TIME
+        time-interval: 300
+        shrink-amount: 50
+        minimum-size: 50
+        players-threshold: 5
+    BLOCK-SETTINGS:
+      replace-all-blocks: true
+      replace-blocks:
+        - AIR
+        - CAVE_AIR
+        - GRASS
+        - TALL_GRASS
+    GAME-SETTINGS:
+      elimination-gamemode: SPECTATOR
+      start-gamemode: SURVIVAL
+      allow-rejoin: false
+    BORDER-DAMAGE:
+      enabled: true
+      damage-radius: 5
+      damage-amount: 2
+      damage-interval: 1
+      warning-distance: 3
+    EFFECTS:
+      player:
+        fall-damage: true
+        drowning: true
+        fire-resistance: false
+      environment:
+        weather: true
+        daylight-cycle: true
+        mob-spawning: false
+    ITEMS:
+      starting-items:
+        enabled: true
+        items:
+          - material: STONE_PICKAXE
+            amount: 1
+          - material: BREAD
+            amount: 16
+      banned-items:
+        - ENDER_PEARL
+        - WATER_BUCKET
+    
+    SCOREBOARD:
+      enabled: true
+      title: §6§lLava Rise
+      lines:
+        - §7§m----------------
+        - '§fPlayers Alive: §a%alive%'
+        - '§fCurrent Height: §e%height%'
+        - '§fBorder: §c%border%'
+        - '§fTime: §b%time%'
+        - §7§m----------------
+  
+  NETHER:
+    enabled: true
+    RISE-INTERVAL: 15
+    RISE-TYPE: LAVA
+    HEIGHT:
+      start: 0
+      end: 128
+      announcement-interval: 5
+    BORDER:
+      initial-size: 200
+      shrink-enabled: true
+      shrink:
+        method: TIME
+        time-interval: 240
+        shrink-amount: 40
+        minimum-size: 40
+        players-threshold: 5
+    BLOCK-SETTINGS:
+      replace-all-blocks: true
+    BORDER-DAMAGE:
+      enabled: true
+      damage-radius: 5
+      damage-amount: 3
+      damage-interval: 1
+  
+  END:
+    enabled: true
+    RISE-INTERVAL: 15
+    RISE-TYPE: VOID
+    HEIGHT:
+      start: 0
+      end: 256
+      announcement-interval: 5
+    BORDER:
+      initial-size: 300
+      shrink-enabled: true
+      shrink:
+        method: TIME
+        time-interval: 360
+        shrink-amount: 60
+        minimum-size: 60
+        players-threshold: 5
+    BLOCK-SETTINGS:
+      replace-all-blocks: true
+    BORDER-DAMAGE:
+      enabled: true
+      damage-radius: 5
+      damage-amount: 2
+      damage-interval: 1 

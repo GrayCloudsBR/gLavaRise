@@ -1,0 +1,51 @@
+SOUNDS:
+  enabled: true
+  countdown:
+    tick:
+      type: BLOCK_NOTE_BLOCK_HAT
+      volume: 1.0
+      pitch: 1.0
+    final:
+      type: BLOCK_NOTE_BLOCK_PLING
+      volume: 1.0
+      pitch: 2.0
+  game:
+    start:
+      type: ENTITY_ENDER_DRAGON_GROWL
+      volume: 1.0
+      pitch: 1.0
+    end:
+      type: ENTITY_WITHER_DEATH
+      volume: 1.0
+      pitch: 1.0
+    win:
+      type: UI_TOAST_CHALLENGE_COMPLETE
+      volume: 1.0
+      pitch: 1.0
+    lose:
+      type: ENTITY_VILLAGER_DEATH
+      volume: 1.0
+      pitch: 1.0
+  height:
+    warning:
+      type: BLOCK_NOTE_BLOCK_BASS
+      volume: 1.0
+      pitch: 0.5
+  border:
+    warning:
+      type: ENTITY_ELDER_GUARDIAN_CURSE
+      volume: 0.5
+      pitch: 1.0
+  team:
+    join:
+      type: ENTITY_EXPERIENCE_ORB_PICKUP
+      volume: 1.0
+      pitch: 1.0
+    leave:
+      type: BLOCK_NOTE_BLOCK_BASS
+      volume: 1.0
+      pitch: 0.5
+  error:
+    type: ENTITY_VILLAGER_NO
+    volume: 1.0
+    pitch: 1.0 

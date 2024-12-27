@@ -4,21 +4,26 @@ main: net.grayclouds.gLavaRise.GLavaRise
 api-version: '1.20'
 
 commands:
-  startlava:
+  start:
     description: Start the lava/void rise
     usage: /<command>
     permission: glavarise.start
-  pauselava:
+  pause:
     description: Pause the lava/void rise
     usage: /<command>
     permission: glavarise.pause
-  endlava:
+  end:
     description: End the lava/void rise
     usage: /<command>
     permission: glavarise.end
-  reloadlava:
+  reload:
     description: Reload the plugin configuration
     usage: /<command>
+    permission: glavarise.reload
+  team:
+    description: Team management commands
+    usage: /<command> <join|leave|list>
+    permission: glavarise.team
 
 permissions:
   glavarise.start:
@@ -29,4 +34,7 @@ permissions:
     default: op
   glavarise.end:
     description: Allows ending the lava rise event
+    default: op
+  glavarise.reload:
+    description: Allows reloading the configuration
     default: op

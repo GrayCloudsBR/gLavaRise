@@ -1,165 +1,148 @@
 package net.grayclouds.gLavaRise;
 
-import org.bukkit.plugin.java.JavaPlugin;
+import net.grayclouds.gLavaRise.commands.*;
+import net.grayclouds.gLavaRise.handler.*;
 import net.grayclouds.gLavaRise.listener.LavaListener;
-import net.grayclouds.gLavaRise.commands.StartCommand;
-import net.grayclouds.gLavaRise.commands.PauseCommand;
-import net.grayclouds.gLavaRise.commands.EndCommand;
-import net.grayclouds.gLavaRise.commands.ReloadCommand;
-import net.grayclouds.gLavaRise.handler.WorldBorderHandler;
-import net.grayclouds.gLavaRise.handler.BorderDamageHandler;
+import net.grayclouds.gLavaRise.manager.*;
+import net.grayclouds.gLavaRise.listener.GameEventListener;
+import net.grayclouds.gLavaRise.listener.PlayerDeathListener;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.configuration.file.FileConfiguration;
-import java.io.File;
 
 public final class GLavaRise extends JavaPlugin {
+    private ConfigManager configManager;
+    private GameStateManager gameStateManager;
+    private PlayerManager playerManager;
     private LavaListener lavaListener;
+    private SoundManager soundManager;
+    private TitleManager titleManager;
+    private ScoreboardManager scoreboardManager;
+    private WinConditionManager winConditionManager;
+    private TeamManager teamManager;
+    private RespawnManager respawnManager;
 
     @Override
     public void onEnable() {
-        // First ensure config exists
-        if (!new File(getDataFolder(), "config.yml").exists()) {
-            getLogger().info("Config not found, creating default config.yml");
-            saveDefaultConfig();
-        }
-        
-        // Load and validate config
-        reloadConfig();
+        saveDefaultConfig();
         if (!validateConfig()) {
-            getLogger().severe("Invalid configuration! Resetting to default values.");
-            saveResource("config.yml", true);  // Force overwrite with default
-            reloadConfig();
+            getLogger().severe("Invalid configuration! Disabling plugin...");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
         }
-        
+
         // Initialize handlers
         WorldBorderHandler.init(this);
-        BorderDamageHandler.init(this);
-        
-        // Initialize LavaListener
-        lavaListener = new LavaListener(this);
+        configManager = new ConfigManager(this);
+        playerManager = new PlayerManager(this);
+        BorderDamageHandler.init(this, playerManager);
+
+        gameStateManager = new GameStateManager(this);
+        teamManager = new TeamManager(this);
+        respawnManager = new RespawnManager(this, playerManager);
+        winConditionManager = new WinConditionManager(this, playerManager, gameStateManager);
+        soundManager = new SoundManager(this);
+        titleManager = new TitleManager(this);
+        scoreboardManager = new ScoreboardManager(this, playerManager, gameStateManager);
+        lavaListener = new LavaListener(this, configManager, gameStateManager, playerManager);
         
         // Register commands
-        getCommand("startlava").setExecutor(new StartCommand(lavaListener, this));
-        getCommand("pauselava").setExecutor(new PauseCommand(lavaListener, this));
-        getCommand("endlava").setExecutor(new EndCommand(lavaListener, this));
-        getCommand("reloadlava").setExecutor(new ReloadCommand(this));
+        getCommand("start").setExecutor(new StartCommand(lavaListener, this, gameStateManager, playerManager));
+        getCommand("end").setExecutor(new EndCommand(lavaListener, this, gameStateManager, playerManager));
+        getCommand("pause").setExecutor(new PauseCommand(lavaListener, this, gameStateManager));
+        getCommand("reload").setExecutor(new ReloadCommand(this, configManager));
+        getCommand("team").setExecutor(new TeamCommand(this, teamManager));
+        
+        // Register listeners
+        getServer().getPluginManager().registerEvents(new PlayerDeathListener(this), this);
+        getServer().getPluginManager().registerEvents(new GameEventListener(this, soundManager, titleManager, scoreboardManager), this);
+        getServer().getPluginManager().registerEvents(lavaListener, this);
+    }
+
+    @Override
+    public void onDisable() {
+        if (gameStateManager.isGameRunning()) {
+            lavaListener.resetLavaRise();
+        }
+        BorderDamageHandler.stop();
+        WorldBorderHandler.stop();
+        getLogger().info("GLavaRise has been disabled!");
+    }
+
+    public ConfigManager getConfigManager() {
+        return configManager;
+    }
+
+    public GameStateManager getGameStateManager() {
+        return gameStateManager;
+    }
+
+    public PlayerManager getPlayerManager() {
+        return playerManager;
+    }
+
+    public SoundManager getSoundManager() {
+        return soundManager;
+    }
+
+    public TitleManager getTitleManager() {
+        return titleManager;
+    }
+
+    public ScoreboardManager getScoreboardManager() {
+        return scoreboardManager;
+    }
+
+    public WinConditionManager getWinConditionManager() {
+        return winConditionManager;
+    }
+
+    public TeamManager getTeamManager() {
+        return teamManager;
+    }
+
+    public RespawnManager getRespawnManager() {
+        return respawnManager;
+    }
+
+    public LavaListener getLavaListener() {
+        return lavaListener;
     }
 
     private boolean validateConfig() {
         FileConfiguration config = getConfig();
         boolean needsSave = false;
         
-        // Ensure CONFIG and WORLDS sections exist
-        if (!config.isConfigurationSection("CONFIG") || !config.isConfigurationSection("CONFIG.WORLDS")) {
-            getLogger().severe("Missing main CONFIG or WORLDS section!");
-            return false;
-        }
-
-        // Validate OVERWORLD section (required)
-        if (!config.isConfigurationSection("CONFIG.WORLDS.OVERWORLD")) {
-            getLogger().severe("Missing OVERWORLD section!");
-            return false;
-        }
-
-        // Validate OVERWORLD settings
-        String basePath = "CONFIG.WORLDS.OVERWORLD";
-        if (!config.isBoolean(basePath + ".enabled")) {
-            getLogger().warning("Missing enabled setting, setting default: true");
-            config.set(basePath + ".enabled", true);
-            needsSave = true;
-        }
-
-        if (!config.isInt(basePath + ".RISE-INTERVAL")) {
-            getLogger().warning("Missing RISE-INTERVAL, setting default: 15");
-            config.set(basePath + ".RISE-INTERVAL", 15);
-            needsSave = true;
-        }
-
-        if (!config.isString(basePath + ".RISE-TYPE")) {
-            getLogger().warning("Missing RISE-TYPE, setting default: LAVA");
-            config.set(basePath + ".RISE-TYPE", "LAVA");
-            needsSave = true;
-        }
-
-        // Validate BORDER section
-        if (!config.isConfigurationSection(basePath + ".BORDER")) {
-            getLogger().severe("Missing BORDER section!");
-            return false;
-        }
-
-        // Validate BLOCK-SETTINGS section
-        if (!config.isConfigurationSection(basePath + ".BLOCK-SETTINGS")) {
-            getLogger().severe("Missing BLOCK-SETTINGS section!");
-            return false;
-        }
-
-        // Validate BORDER-DAMAGE section
-        if (!config.isConfigurationSection(basePath + ".BORDER-DAMAGE")) {
-            getLogger().severe("Missing BORDER-DAMAGE section!");
-            return false;
-        }
-
-        // Validate MESSAGES section
-        if (!config.isConfigurationSection("CONFIG.MESSAGES")) {
-            getLogger().severe("Missing MESSAGES section!");
-            return false;
-        }
-
-        // Validate HEIGHT section
-        if (!config.isConfigurationSection(basePath + ".HEIGHT")) {
-            getLogger().warning("Missing HEIGHT section, setting defaults");
-            config.set(basePath + ".HEIGHT.start", -64);
-            config.set(basePath + ".HEIGHT.end", 320);
-            needsSave = true;
-        } else {
-            if (!config.isInt(basePath + ".HEIGHT.start")) {
-                getLogger().warning("Missing start height, setting default: -64");
-                config.set(basePath + ".HEIGHT.start", -64);
-                needsSave = true;
-            }
-            if (!config.isInt(basePath + ".HEIGHT.end")) {
-                getLogger().warning("Missing end height, setting default: 320");
-                config.set(basePath + ".HEIGHT.end", 320);
-                needsSave = true;
-            }
-        }
-
-        // Validate NETHER settings if enabled
-        if (config.getBoolean("CONFIG.WORLDS.NETHER.enabled", false)) {
-            basePath = "CONFIG.WORLDS.NETHER";
-            if (!config.isConfigurationSection(basePath + ".HEIGHT")) {
-                getLogger().warning("Missing Nether HEIGHT section, setting defaults");
-                config.set(basePath + ".HEIGHT.start", 0);
-                config.set(basePath + ".HEIGHT.end", 128);
-                needsSave = true;
-            }
-        }
-
-        // Validate END settings if enabled
-        if (config.getBoolean("CONFIG.WORLDS.END.enabled", false)) {
-            basePath = "CONFIG.WORLDS.END";
-            if (!config.isConfigurationSection(basePath + ".HEIGHT")) {
-                getLogger().warning("Missing End HEIGHT section, setting defaults");
-                config.set(basePath + ".HEIGHT.start", 0);
-                config.set(basePath + ".HEIGHT.end", 256);
-                needsSave = true;
+        // Add validation for HEIGHT.announcement-interval
+        String[] worlds = {"OVERWORLD", "NETHER", "END"};
+        for (String world : worlds) {
+            String basePath = "CONFIG.WORLDS." + world;
+            if (config.getBoolean(basePath + ".enabled", false)) {
+                if (!config.isInt(basePath + ".HEIGHT.announcement-interval")) {
+                    config.set(basePath + ".HEIGHT.announcement-interval", 5);
+                    needsSave = true;
+                }
+                
+                // Validate rise interval is positive
+                int riseInterval = config.getInt(basePath + ".RISE-INTERVAL", 15);
+                if (riseInterval <= 0) {
+                    config.set(basePath + ".RISE-INTERVAL", 15);
+                    needsSave = true;
+                }
+                
+                // Validate height values
+                int startHeight = config.getInt(basePath + ".HEIGHT.start");
+                int endHeight = config.getInt(basePath + ".HEIGHT.end");
+                if (startHeight >= endHeight) {
+                    getLogger().severe("Invalid height configuration for " + world);
+                    return false;
+                }
             }
         }
 
         if (needsSave) {
-            getLogger().info("Saving updated configuration...");
             saveConfig();
         }
 
-        getLogger().info("Configuration validation successful!");
         return true;
-    }
-
-    @Override
-    public void onDisable() {
-        if (lavaListener != null) {
-            lavaListener.stopLavaRise();
-        }
-        BorderDamageHandler.stop();
-        WorldBorderHandler.stop();
     }
 }

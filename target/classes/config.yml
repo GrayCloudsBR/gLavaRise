@@ -1,88 +1,13 @@
 # gLavaRise config file (config.yml)
 # Plugin made by GrayClouds
 
-CONFIG:
-  WORLDS:
-    OVERWORLD:
-      enabled: true
-      RISE-INTERVAL: 15
-      RISE-TYPE: "LAVA"  # Can be "LAVA" or "VOID"
-      HEIGHT:
-        start: -64
-        end: 320
-      BORDER:
-        initial-size: 250
-        shrink-enabled: true
-        shrink:
-          method: "TIME"
-          time-interval: 300
-          shrink-amount: 50
-          minimum-size: 50
-          players-threshold: 5
-      BLOCK-SETTINGS:
-        replace-all-blocks: true
-      BORDER-DAMAGE:
-        enabled: true
-        damage-radius: 5
-        damage-amount: 2
-        damage-interval: 1
+# This is the main configuration file.
+# Other settings can be found in:
+# - game.yml: General game settings
+# - worlds.yml: World-specific settings
+# - messages.yml: All plugin messages
+# - teams.yml: Team configuration
+# - sounds.yml: Sound settings
+# - titles.yml: Title and subtitle settings
 
-    NETHER:
-      enabled: false
-      RISE-INTERVAL: 15
-      RISE-TYPE: "LAVA"  # Can be "LAVA" or "VOID"
-      HEIGHT:
-        start: 0
-        end: 128
-      BORDER:
-        initial-size: 200
-        shrink-enabled: true
-        shrink:
-          method: "TIME"
-          time-interval: 240
-          shrink-amount: 40
-          minimum-size: 40
-          players-threshold: 5
-      BLOCK-SETTINGS:
-        replace-all-blocks: true
-      BORDER-DAMAGE:
-        enabled: true
-        damage-radius: 5
-        damage-amount: 3
-        damage-interval: 1
-
-    END:
-      enabled: false
-      RISE-INTERVAL: 20
-      RISE-TYPE: "VOID"  # Can be "LAVA" or "VOID"
-      HEIGHT:
-        start: 0
-        end: 256
-      BORDER:
-        initial-size: 300
-        shrink-enabled: true
-        shrink:
-          method: "TIME"
-          time-interval: 360
-          shrink-amount: 60
-          minimum-size: 60
-          players-threshold: 5
-      BLOCK-SETTINGS:
-        replace-all-blocks: true
-      BORDER-DAMAGE:
-        enabled: true
-        damage-radius: 5
-        damage-amount: 2
-        damage-interval: 1
-
-  MESSAGES:
-    lava-start: "The %type% is now rising!"
-    lava-pause: "The %type% rise has been paused!"
-    lava-end: "The %type% rise has been ended!"
-    lava-not-active: "The %type% rise is not currently active!"
-    height-warning: "Current %type% height: %height%"
-    border-warning: "You are too close to the border!"
-    border-shrink-warning: "§cWarning: Border will shrink by %amount% blocks in %time% seconds!"
-    player-eliminated: "%player% has been eliminated!"
-    border-minimum: "The border has reached its minimum size!"
-    border-shrink: "The border is shrinking!"
+VERSION: 'v1.3'

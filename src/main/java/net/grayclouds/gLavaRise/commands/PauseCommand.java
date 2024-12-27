@@ -1,50 +1,62 @@
 package net.grayclouds.gLavaRise.commands;
 
+import net.grayclouds.gLavaRise.listener.LavaListener;
+import net.grayclouds.gLavaRise.manager.GameStateManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
-import net.grayclouds.gLavaRise.listener.LavaListener;
+import net.grayclouds.gLavaRise.manager.ConfigManager;
+import net.grayclouds.gLavaRise.GLavaRise;
 
 public class PauseCommand implements CommandExecutor {
     private final LavaListener lavaListener;
-    private final Plugin plugin;
+    private final GameStateManager gameStateManager;
+    private final ConfigManager configManager;
 
-    public PauseCommand(LavaListener lavaListener, Plugin plugin) {
+    public PauseCommand(LavaListener lavaListener, Plugin plugin, GameStateManager gameStateManager) {
         this.lavaListener = lavaListener;
-        this.plugin = plugin;
+        this.gameStateManager = gameStateManager;
+        this.configManager = ((GLavaRise)plugin).getConfigManager();
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        FileConfiguration config = plugin.getConfig();
-        String playerOnlyMessage = config.getString("CONFIG.MESSAGES.player-only", "This command can only be used by players!");
-        String noPermissionMessage = config.getString("CONFIG.MESSAGES.no-permission", "You don't have permission to use this command!");
-        String notActiveMessage = config.getString("CONFIG.MESSAGES.lava-not-active", "Lava rise is not currently active!");
-        String pauseMessage = config.getString("CONFIG.MESSAGES.lava-pause", "The %type% rise has been paused at height: %height%!")
-            .replace("%type%", lavaListener.getRiseTypeName())
-            .replace("%height%", String.valueOf(lavaListener.getCurrentHeight()));
-
         if (!(sender instanceof Player)) {
+            String playerOnlyMessage = configManager.getConfig("messages.yml").getString("MESSAGES.player-only", "This command can only be used by players!");
             sender.sendMessage(playerOnlyMessage);
             return true;
         }
 
         Player player = (Player) sender;
+        
         if (!player.hasPermission("glavarise.pause")) {
+            String noPermissionMessage = configManager.getConfig("messages.yml").getString("MESSAGES.no-permission", "You don't have permission!");
             player.sendMessage(noPermissionMessage);
             return true;
         }
 
-        if (!lavaListener.isRising()) {
-            player.sendMessage(notActiveMessage);
+        if (!gameStateManager.isGameRunning()) {
+            String notRunningMessage = configManager.getConfig("messages.yml").getString("MESSAGES.game-not-running", "No game is currently running!");
+            player.sendMessage(notRunningMessage);
             return true;
         }
 
-        lavaListener.stopLavaRise();
-        player.sendMessage(pauseMessage);
+        if (gameStateManager.isPaused()) {
+            if (gameStateManager.resumeGame()) {
+                lavaListener.resumeLavaRise();
+                String resumeMessage = configManager.getConfig("messages.yml").getString("MESSAGES.game-resumed", "Game has been resumed!");
+                player.sendMessage(resumeMessage);
+            }
+        } else {
+            if (gameStateManager.pauseGame()) {
+                lavaListener.pauseLavaRise();
+                String pauseMessage = configManager.getConfig("messages.yml").getString("MESSAGES.game-paused", "Game has been paused!");
+                player.sendMessage(pauseMessage);
+            }
+        }
+
         return true;
     }
 }

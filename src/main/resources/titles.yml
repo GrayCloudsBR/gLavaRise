@@ -1,0 +1,18 @@
+TITLES:
+  enabled: true
+  events:
+    start:
+      title: "§6Game Started!"
+      subtitle: "§eGood luck!"
+      fade-in: 10
+      stay: 40
+      fade-out: 10
+    elimination:
+      title: "§cEliminated!"
+      subtitle: "§7Better luck next time!"
+    victory:
+      title: "§6Victory!"
+      subtitle: "§f%player% won the game!"
+  win:
+    title: "§6Victory!"
+    subtitle: "§f%player% won the game!" 

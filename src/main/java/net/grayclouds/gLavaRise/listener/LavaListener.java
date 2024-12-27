@@ -1,53 +1,41 @@
 package net.grayclouds.gLavaRise.listener;
 
+import net.grayclouds.gLavaRise.manager.ConfigManager;
+import net.grayclouds.gLavaRise.manager.GameStateManager;
+import net.grayclouds.gLavaRise.manager.PlayerManager;
+import net.grayclouds.gLavaRise.handler.WorldBorderHandler;
 import org.bukkit.World;
 import org.bukkit.Material;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.Location;
-import org.bukkit.WorldBorder;
-import net.grayclouds.gLavaRise.handler.WorldBorderHandler;
 import org.bukkit.entity.Player;
+import java.util.UUID;
+import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.event.Listener;
 
-public class LavaListener {
-    private Plugin plugin;
-    private boolean isRising = false;
-    private int currentHeight = -64;
-    private int savedHeight = -64;
-    private int startHeight = -64;
-    private int endHeight = 320;
-    private int riseInterval = 15;
-    private BukkitRunnable lavaTask;
-    private boolean replaceAllBlocks = true;
-    private double borderSize;
-    private String riseType = "LAVA";
-    private World currentWorld;
+public class LavaListener implements Listener {
+    private final Plugin plugin;
+    private final ConfigManager configManager;
+    private final GameStateManager gameStateManager;
+    private final PlayerManager playerManager;
+    
+    private int currentHeight;
+    private int startHeight;
+    private int endHeight;
+    private int riseInterval;
+    private BukkitTask lavaTask;
+    private boolean replaceAllBlocks;
+    private String riseType;
+    private int heightAnnouncementInterval;
+    private int lastAnnouncedHeight;
 
-    public LavaListener(Plugin plugin) {
+    public LavaListener(Plugin plugin, ConfigManager configManager, 
+                       GameStateManager gameStateManager, PlayerManager playerManager) {
         this.plugin = plugin;
-        this.currentWorld = plugin.getServer().getWorlds().get(0);
-        loadWorldConfig(currentWorld);
-    }
-
-    private boolean isWorldEnabled(World world) {
-        String worldType = getWorldType(world);
-        return plugin.getConfig().getBoolean("CONFIG.WORLDS." + worldType + ".enabled", false);
-    }
-
-    private String getWorldType(World world) {
-        switch (world.getEnvironment()) {
-            case NETHER:
-                return "NETHER";
-            case THE_END:
-                return "END";
-            default:
-                return "OVERWORLD";
-        }
-    }
-
-    private void loadConfig() {
-        plugin.saveDefaultConfig();
+        this.configManager = configManager;
+        this.gameStateManager = gameStateManager;
+        this.playerManager = playerManager;
     }
 
     private void loadWorldConfig(World world) {
@@ -56,29 +44,29 @@ public class LavaListener {
             return;
         }
 
-        FileConfiguration config = plugin.getConfig();
-        String worldType = getWorldType(world);
-        String basePath = "CONFIG.WORLDS." + worldType;
+        ConfigManager.WorldConfig worldConfig = configManager.getWorldConfig(world);
         
-        this.riseInterval = config.getInt(basePath + ".RISE-INTERVAL", 15);
-        this.replaceAllBlocks = config.getBoolean(basePath + ".BLOCK-SETTINGS.replace-all-blocks", true);
-        this.riseType = config.getString(basePath + ".RISE-TYPE", "LAVA");
+        this.riseInterval = worldConfig.riseInterval;
+        this.replaceAllBlocks = true; // Could be added to WorldConfig if needed
+        this.riseType = worldConfig.riseType;
+        this.startHeight = worldConfig.startHeight;
+        this.endHeight = worldConfig.endHeight;
+        this.heightAnnouncementInterval = worldConfig.announcementInterval;
         
-        // Load height settings
-        this.startHeight = config.getInt(basePath + ".HEIGHT.start", -64);
-        this.endHeight = config.getInt(basePath + ".HEIGHT.end", world.getMaxHeight());
-        
-        // Always set current height to start height when loading config
+        // Reset current height to start height
         this.currentHeight = this.startHeight;
-        this.savedHeight = this.startHeight;
+        this.lastAnnouncedHeight = this.startHeight;
     }
 
     private void placeRisingBlock(World world, int x, int y, int z) {
         try {
             if (y >= world.getMinHeight() && y <= world.getMaxHeight()) {
-                if (replaceAllBlocks || world.getBlockAt(x, y, z).getType() == Material.AIR) {
-                    Material material = riseType.equals("VOID") ? Material.AIR : Material.LAVA;
-                    world.getBlockAt(x, y, z).setType(material);
+                Location loc = new Location(world, x, y, z);
+                if (isWithinBorder(loc)) {
+                    if (replaceAllBlocks || world.getBlockAt(x, y, z).getType() == Material.AIR) {
+                        Material material = riseType.equals("VOID") ? Material.AIR : Material.LAVA;
+                        world.getBlockAt(x, y, z).setType(material);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -86,102 +74,93 @@ public class LavaListener {
         }
     }
 
+    private boolean isWithinBorder(Location location) {
+        return WorldBorderHandler.isLocationWithinBorder(location);
+    }
+
     public String getRiseTypeName() {
-        if (currentWorld != null) {
-            loadWorldConfig(currentWorld);
-        }
         return (riseType != null && riseType.equals("VOID")) ? "void" : "lava";
     }
 
     private void announceHeight(World world) {
-        String heightMsg = plugin.getConfig().getString("CONFIG.MESSAGES.height-warning", 
-            "§e[Rise] §fCurrent %type% height: §c%height%")
-                .replace("%height%", String.valueOf(currentHeight))
-                .replace("%type%", getRiseTypeName());
-        for (Player player : world.getPlayers()) {
-            player.sendMessage(heightMsg);
+        if (Math.abs(currentHeight - lastAnnouncedHeight) >= heightAnnouncementInterval) {
+            String heightMsg = plugin.getConfig().getString("CONFIG.MESSAGES.height-warning", 
+                "§e[Rise] §fCurrent %type% height: §c%height%")
+                    .replace("%height%", String.valueOf(currentHeight))
+                    .replace("%type%", getRiseTypeName());
+                    
+            for (UUID playerId : playerManager.getAlivePlayers()) {
+                Player player = plugin.getServer().getPlayer(playerId);
+                if (player != null && player.isOnline()) {
+                    player.sendMessage(heightMsg);
+                }
+            }
+            lastAnnouncedHeight = currentHeight;
         }
     }
 
     public void startLavaRise(World world) {
-        if (world == null) return;
+        if (world == null || !gameStateManager.isGameRunning()) return;
         
-        this.currentWorld = world;
-        
-        if (!isWorldEnabled(world)) {
-            plugin.getLogger().warning("Rise is not enabled for " + getWorldType(world));
-            return;
-        }
-
-        if (isRising) return;
-
-        // Load config for this specific world
         loadWorldConfig(world);
-
-        // No need for height validation here since we set it in loadWorldConfig
-        borderSize = WorldBorderHandler.getBorderSize(world) / 2;
-        if (borderSize <= 0) return;
-
-        isRising = true;
-
-        // Set up world border
-        WorldBorderHandler.setupWorldBorder(world, world.getSpawnLocation());
+        
+        if (lavaTask != null) {
+            lavaTask.cancel();
+        }
 
         lavaTask = new BukkitRunnable() {
             @Override
             public void run() {
-                if (currentHeight >= endHeight || !isRising) {
+                if (!gameStateManager.isGameRunning() || gameStateManager.isPaused()) {
+                    return;
+                }
+
+                if (currentHeight >= endHeight) {
                     this.cancel();
-                    isRising = false;
+                    gameStateManager.endGame();
                     return;
                 }
 
                 announceHeight(world);
 
-                // Get world border information
-                Location center = WorldBorderHandler.getCenter(world);
-                borderSize = WorldBorderHandler.getBorderSize(world) / 2;
+                Location center = world.getWorldBorder().getCenter();
+                double borderSize = world.getWorldBorder().getSize() / 2;
                 
-                // Place blocks at current height
-                for (int x = (int) (center.getBlockX() - borderSize); x < center.getBlockX() + borderSize; x++) {
-                    for (int z = (int) (center.getBlockZ() - borderSize); z < center.getBlockZ() + borderSize; z++) {
-                        try {
-                            placeRisingBlock(world, x, currentHeight, z);
-                        } catch (Exception e) {
-                            plugin.getLogger().warning("Error placing " + riseType + " at " + x + ", " + currentHeight + ", " + z);
-                        }
+                for (int x = (int) (center.getBlockX() - borderSize); x <= center.getBlockX() + borderSize; x++) {
+                    for (int z = (int) (center.getBlockZ() - borderSize); z <= center.getBlockZ() + borderSize; z++) {
+                        placeRisingBlock(world, x, currentHeight, z);
                     }
                 }
 
                 currentHeight++;
             }
-        };
-
-        lavaTask.runTaskTimer(plugin, 0L, riseInterval * 20L);
+        }.runTaskTimer(plugin, 0L, riseInterval * 20L);
     }
 
-    public void stopLavaRise() {
-        if (lavaTask != null) {
-            savedHeight = currentHeight;
-            lavaTask.cancel();
+    public void pauseLavaRise() {
+        if (gameStateManager.isGameRunning()) {
+            gameStateManager.pauseGame();
         }
-        isRising = false;
+    }
+
+    public void resumeLavaRise() {
+        if (gameStateManager.isGameRunning() && gameStateManager.isPaused()) {
+            gameStateManager.resumeGame();
+        }
     }
 
     public void resetLavaRise() {
         if (lavaTask != null) {
             lavaTask.cancel();
+            lavaTask = null;
         }
-        isRising = false;
-        if (currentWorld != null) {
-            loadWorldConfig(currentWorld);
+        
+        if (gameStateManager.getActiveWorld() != null) {
+            loadWorldConfig(gameStateManager.getActiveWorld());
         }
-        currentHeight = startHeight;
-        savedHeight = startHeight;
-    }
-
-    public boolean isRising() {
-        return isRising;
+        
+        gameStateManager.endGame();
+        playerManager.reset();
     }
 
     public int getCurrentHeight() {

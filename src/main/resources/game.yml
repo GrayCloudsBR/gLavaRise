@@ -1,0 +1,42 @@
+GAME:
+  countdown:
+    enabled: true
+    duration: 10
+  win-conditions:
+    last-player-standing: true
+    height-reached: false
+    time-limit:
+      enabled: false
+      minutes: 30
+  respawn:
+    enabled: false
+    lives: 1
+  starting-items:
+    enabled: true
+    items:
+      - material: STONE_SWORD
+        amount: 1
+      - material: STONE_PICKAXE
+        amount: 1
+      - material: STONE_AXE
+        amount: 1
+      - material: COOKED_BEEF
+        amount: 16
+
+GENERAL:
+  debug-mode: false
+  allow-world-change: false
+  auto-start-timer: 10
+  minimum-players: 2
+  maximum-players: 100
+
+BORDER:
+  damage-scaling:
+    enabled: true
+    multiplier: 1.5
+    max-damage: 10
+  warning:
+    sound-enabled: true
+    title-enabled: true
+    actionbar-enabled: true
+    chat-enabled: true 
