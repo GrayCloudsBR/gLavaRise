@@ -3,7 +3,6 @@ package net.grayclouds.gLavaRise.listener;
 import net.grayclouds.gLavaRise.manager.ConfigManager;
 import net.grayclouds.gLavaRise.manager.GameStateManager;
 import net.grayclouds.gLavaRise.manager.PlayerManager;
-import net.grayclouds.gLavaRise.handler.WorldBorderHandler;
 import org.bukkit.World;
 import org.bukkit.Material;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -13,7 +12,6 @@ import org.bukkit.entity.Player;
 import java.util.UUID;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.event.Listener;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.block.Block;
 
 public class LavaListener implements Listener {
@@ -60,25 +58,6 @@ public class LavaListener implements Listener {
         plugin.getLogger().info("Loaded world config: start=" + startHeight + ", end=" + endHeight + ", interval=" + riseInterval);
     }
 
-    private void placeRisingBlock(World world, int x, int y, int z) {
-        // Check if chunk is loaded before placing block
-        if (!world.isChunkLoaded(x >> 4, z >> 4)) {
-            return;
-        }
-
-        // Add distance check from spawn to prevent excessive chunk generation
-        Location spawnLoc = world.getSpawnLocation();
-        int maxDistance = 1000; // Configurable max distance
-        if (Math.abs(x - spawnLoc.getBlockX()) > maxDistance || Math.abs(z - spawnLoc.getBlockZ()) > maxDistance) {
-            return;
-        }
-
-        Block block = world.getBlockAt(x, y, z);
-        if (block.getType() == Material.AIR) {
-            block.setType(Material.LAVA);
-        }
-    }
-
     public String getRiseTypeName() {
         return (riseType != null && riseType.equals("VOID")) ? "void" : "lava";
     }
@@ -109,6 +88,9 @@ public class LavaListener implements Listener {
             lavaTask.cancel();
         }
 
+        currentHeight = startHeight; // Initialize at start height
+        lastAnnouncedHeight = currentHeight; // Initialize last announced height
+        
         final int BLOCKS_PER_TICK = 1000; // Process 1000 blocks per tick to reduce lag
         final Location center = world.getWorldBorder().getCenter();
         final double borderSize = world.getWorldBorder().getSize() / 2;
@@ -116,9 +98,6 @@ public class LavaListener implements Listener {
         final int maxX = (int) (center.getBlockX() + borderSize);
         final int minZ = (int) (center.getBlockZ() - borderSize);
         final int maxZ = (int) (center.getBlockZ() + borderSize);
-        
-        final int[] currentX = {minX};
-        final int[] currentZ = {minZ};
 
         lavaTask = new BukkitRunnable() {
             @Override
@@ -129,32 +108,26 @@ public class LavaListener implements Listener {
 
                 if (currentHeight >= endHeight) {
                     this.cancel();
-                    gameStateManager.endGame();
                     return;
                 }
 
-                announceHeight(world);
-
                 int blocksProcessed = 0;
-                while (blocksProcessed < BLOCKS_PER_TICK && currentX[0] <= maxX) {
-                    placeRisingBlock(world, currentX[0], currentHeight, currentZ[0]);
-                    blocksProcessed++;
-                    
-                    currentZ[0]++;
-                    if (currentZ[0] > maxZ) {
-                        currentZ[0] = minZ;
-                        currentX[0]++;
+                for (int x = minX; x <= maxX && blocksProcessed < BLOCKS_PER_TICK; x++) {
+                    for (int z = minZ; z <= maxZ && blocksProcessed < BLOCKS_PER_TICK; z++) {
+                        Block block = world.getBlockAt(x, currentHeight, z);
+                        if (block.getType() == Material.AIR) {
+                            block.setType(Material.LAVA);
+                            blocksProcessed++;
+                        }
                     }
                 }
 
-                // If we've processed all blocks for this height
-                if (currentX[0] > maxX) {
+                if (blocksProcessed < BLOCKS_PER_TICK) {
                     currentHeight++;
-                    currentX[0] = minX;
-                    currentZ[0] = minZ;
+                    announceHeight(world);
                 }
             }
-        }.runTaskTimer(plugin, 0L, 1L); // Run every tick instead of waiting
+        }.runTaskTimer(plugin, 0L, riseInterval);
     }
 
     public void pauseLavaRise() {

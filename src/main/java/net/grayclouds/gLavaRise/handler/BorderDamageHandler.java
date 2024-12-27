@@ -4,6 +4,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.WorldBorder;
+import net.grayclouds.gLavaRise.GLavaRise;
 
 public class BorderDamageHandler {
     private static Plugin plugin;
@@ -19,39 +22,38 @@ public class BorderDamageHandler {
             damageTask.cancel();
         }
 
-        int interval = plugin.getConfig().getInt("CONFIG.WORLDS.OVERWORLD.BORDER-DAMAGE.damage-interval", 1);
         damageTask = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
-            for (Player player : plugin.getServer().getOnlinePlayers()) {
-                if (isOutsideBorder(player.getLocation())) {
-                    damagePlayer(player);
+            World gameWorld = ((GLavaRise)plugin).getGameStateManager().getActiveWorld();
+            if (gameWorld == null) return;
+            
+            WorldBorder border = gameWorld.getWorldBorder();
+            Location center = border.getCenter();
+            double size = border.getSize() / 2.0;
+            
+            for (Player player : gameWorld.getPlayers()) {
+                Location playerLoc = player.getLocation();
+                double x = Math.abs(playerLoc.getX() - center.getX()) - size;
+                double z = Math.abs(playerLoc.getZ() - center.getZ()) - size;
+                double distance = Math.max(Math.max(x, z), 0.0);
+                
+                if (distance > 0) {
+                    // Scale damage based on distance
+                    double damage = Math.min(distance * 0.2, 5.0); // 0.2 damage per block, max 5 damage
+                    player.damage(damage);
+                    
+                    // Push player back towards border
+                    double angle = Math.atan2(center.getZ() - playerLoc.getZ(), center.getX() - playerLoc.getX());
+                    double pushStrength = Math.min(distance * 0.1, 1.0);
+                    player.setVelocity(player.getVelocity().add(
+                        new org.bukkit.util.Vector(
+                            Math.cos(angle) * pushStrength,
+                            0.2,
+                            Math.sin(angle) * pushStrength
+                        )
+                    ));
                 }
             }
-        }, interval * 20L, interval * 20L);
-    }
-
-    private static boolean isOutsideBorder(Location location) {
-        double size = location.getWorld().getWorldBorder().getSize() / 2.0;
-        Location center = location.getWorld().getWorldBorder().getCenter();
-        double x = location.getX() - center.getX();
-        double z = location.getZ() - center.getZ();
-        return Math.abs(x) > size || Math.abs(z) > size;
-    }
-
-    private static double getDistanceOutsideBorder(Location location) {
-        double size = location.getWorld().getWorldBorder().getSize() / 2.0;
-        Location center = location.getWorld().getWorldBorder().getCenter();
-        double x = Math.abs(location.getX() - center.getX()) - size;
-        double z = Math.abs(location.getZ() - center.getZ()) - size;
-        return Math.max(Math.max(x, z), 0.0);
-    }
-
-    private static void damagePlayer(Player player) {
-        double distance = getDistanceOutsideBorder(player.getLocation());
-        double multiplier = plugin.getConfig().getDouble("CONFIG.BORDER.damage-scaling.multiplier", 1.5);
-        double maxDamage = plugin.getConfig().getDouble("CONFIG.BORDER.damage-scaling.max-damage", 10.0);
-        
-        double damage = Math.min(distance * multiplier, maxDamage);
-        player.damage(damage);
+        }, 10L, 10L); // Check every half second
     }
 
     public static void stop() {

@@ -67,10 +67,8 @@ public class GameStateManager {
         // Remove scoreboard from all players
         ((GLavaRise)plugin).getScoreboardManager().removeScoreboard();
 
-        // Teleport all players to lobby
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            ((GLavaRise)plugin).getWorldManager().teleportToLobby(player);
-        }
+        // Delete the game world and teleport players to lobby
+        ((GLavaRise)plugin).getWorldManager().deleteCurrentGameWorld();
 
         // Call game end event
         if (activeWorld != null) {

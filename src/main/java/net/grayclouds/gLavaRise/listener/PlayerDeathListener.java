@@ -2,6 +2,7 @@ package net.grayclouds.gLavaRise.listener;
 
 import net.grayclouds.gLavaRise.GLavaRise;
 import net.grayclouds.gLavaRise.events.PlayerEliminationEvent;
+import net.grayclouds.gLavaRise.events.PlayerWinEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -32,6 +33,9 @@ public class PlayerDeathListener implements Listener {
         PlayerEliminationEvent eliminationEvent = new PlayerEliminationEvent(player);
         Bukkit.getPluginManager().callEvent(eliminationEvent);
 
+        // Update scoreboard immediately
+        glavaRise.getScoreboardManager().updateScoreboard();
+
         // Teleport to lobby
         glavaRise.getWorldManager().teleportToLobby(player);
         
@@ -39,13 +43,13 @@ public class PlayerDeathListener implements Listener {
         if (glavaRise.getPlayerManager().getAlivePlayers().size() == 1) {
             Player winner = Bukkit.getPlayer(glavaRise.getPlayerManager().getAlivePlayers().iterator().next());
             if (winner != null) {
+                // Call win event first
+                PlayerWinEvent winEvent = new PlayerWinEvent(winner);
+                Bukkit.getPluginManager().callEvent(winEvent);
+                
+                // Then end game
                 glavaRise.getGameStateManager().endGame();
                 winner.sendMessage("§6§lVictory! §fYou won the game!");
-                
-                // Teleport winner to lobby after a short delay
-                Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                    glavaRise.getWorldManager().teleportToLobby(winner);
-                }, 60L); // 3 second delay
             }
         }
     }

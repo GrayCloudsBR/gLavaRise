@@ -70,7 +70,7 @@ public class GameplayManager implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         if (!gameStateManager.isGameRunning()) return;
         
-        if (!allowBuilding || (!allowedBreakBlocks.isEmpty() && !allowedBreakBlocks.contains(event.getBlock().getType()))) {
+        if (!allowBuilding || (allowedBreakBlocks.size() > 0 && !allowedBreakBlocks.contains(event.getBlock().getType()))) {
             event.setCancelled(true);
         }
     }
@@ -79,7 +79,7 @@ public class GameplayManager implements Listener {
     public void onBlockPlace(BlockPlaceEvent event) {
         if (!gameStateManager.isGameRunning()) return;
         
-        if (!allowBuilding || (!allowedPlaceBlocks.isEmpty() && !allowedPlaceBlocks.contains(event.getBlock().getType()))) {
+        if (!allowBuilding || (allowedPlaceBlocks.size() > 0 && !allowedPlaceBlocks.contains(event.getBlock().getType()))) {
             event.setCancelled(true);
         }
     }

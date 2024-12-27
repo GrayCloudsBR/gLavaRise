@@ -75,33 +75,37 @@ public class ScoreboardManager {
     }
 
     public void updateScoreboard() {
-        if (scoreboard == null || !gameStateManager.isGameRunning()) return;
+        if (!gameStateManager.isGameRunning() || scoreboard == null || objective == null) {
+            return;
+        }
+
+        World gameWorld = gameStateManager.getActiveWorld();
+        if (gameWorld == null) return;
+
+        LavaListener lavaListener = ((GLavaRise)plugin).getLavaListener();
         
-        // Clear all existing scores first
+        // Clear previous scores
         for (String entry : scoreboard.getEntries()) {
             scoreboard.resetScores(entry);
         }
 
-        Objective objective = scoreboard.getObjective("lavarise");
-        if (objective == null) {
-            setupScoreboard();
-            objective = scoreboard.getObjective("lavarise");
-        }
+        // Update with current values
+        objective.getScore("§7§m----------------").setScore(7);
+        objective.getScore("§fPlayers Alive: §a" + playerManager.getAlivePlayerCount()).setScore(6);
+        objective.getScore("§fCurrent Height: §c" + lavaListener.getCurrentHeight()).setScore(5);
+        objective.getScore("§fBorder: §c" + (int)gameWorld.getWorldBorder().getSize()).setScore(4);
+        objective.getScore("§7§m----------------").setScore(3);
+        
+        long gameTime = gameStateManager.getGameTime();
+        String timeStr = String.format("%02d:%02d", gameTime / 60, gameTime % 60);
+        objective.getScore("§fTime: §e" + timeStr).setScore(2);
+        objective.getScore("§7§m----------------").setScore(1);
 
-        World gameWorld = gameStateManager.getActiveWorld();
-        if (gameWorld != null) {
-            LavaListener lavaListener = ((GLavaRise)plugin).getLavaListener();
-            
-            objective.getScore("§7§m----------------").setScore(7);
-            objective.getScore("§fPlayers Alive: §a" + playerManager.getAlivePlayers().size()).setScore(6);
-            objective.getScore("§fCurrent Height: §c" + lavaListener.getCurrentHeight()).setScore(5);
-            objective.getScore("§fBorder: §c" + (int)gameWorld.getWorldBorder().getSize()).setScore(4);
-            objective.getScore("§7§m----------------").setScore(3);
-            
-            long gameTime = gameStateManager.getGameTime();
-            String timeStr = String.format("%02d:%02d", gameTime / 60, gameTime % 60);
-            objective.getScore("§fTime: §e" + timeStr).setScore(2);
-            objective.getScore("§7§m----------------").setScore(1);
+        // Update scoreboard for all players
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.getWorld().equals(gameWorld)) {
+                player.setScoreboard(scoreboard);
+            }
         }
     }
 } 

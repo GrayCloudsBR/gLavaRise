@@ -56,6 +56,9 @@ public class EndCommand implements CommandExecutor {
         lavaListener.resetLavaRise();
         playerManager.reset();
         
+        // Delete the game world
+        ((GLavaRise)plugin).getWorldManager().deleteCurrentGameWorld();
+        
         player.sendMessage("§aGame ended successfully!");
 
         // Stop win condition checking

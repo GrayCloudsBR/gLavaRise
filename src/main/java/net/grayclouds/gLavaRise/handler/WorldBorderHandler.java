@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.configuration.file.FileConfiguration;
+import net.grayclouds.gLavaRise.manager.ConfigManager;
 
 public class WorldBorderHandler {
     private static Plugin plugin;
@@ -16,61 +17,34 @@ public class WorldBorderHandler {
         WorldBorderHandler.plugin = plugin;
     }
 
-    public static void setupWorldBorder(World world, Location center) {
+    public static void setupWorldBorder(World world) {
+        if (world == null) return;
+        
         WorldBorder border = world.getWorldBorder();
-        border.setCenter(center);
+        border.setCenter(world.getSpawnLocation());
         
-        FileConfiguration worldsConfig = plugin.getConfig();
-        String worldType = getWorldType(world);
-        String basePath = "CONFIG.WORLDS." + worldType + ".BORDER";
+        ConfigManager configManager = ((net.grayclouds.gLavaRise.GLavaRise)plugin).getConfigManager();
+        ConfigManager.WorldConfig worldConfig = configManager.getWorldConfig(world);
         
-        double initialSize = worldsConfig.getDouble(basePath + ".initial-size", 200.0);
-        border.setSize(initialSize);
-        border.setDamageAmount(worldsConfig.getDouble(basePath + ".damage-amount", 1.0));
-        border.setDamageBuffer(worldsConfig.getDouble(basePath + ".damage-radius", 5.0));
+        // Initialize border
+        border.setSize(worldConfig.initialBorderSize);
         border.setWarningDistance(5);
         border.setWarningTime(15);
-
-        // Start border shrinking if enabled
-        if (worldsConfig.getBoolean(basePath + ".shrink-enabled", true)) {
-            startBorderShrinking(world);
+        border.setDamageAmount(2.0);
+        
+        // Setup border shrinking if enabled
+        if (worldConfig.shrinkEnabled) {
+            double totalShrinkBlocks = worldConfig.initialBorderSize - worldConfig.minimumSize;
+            long shrinkTimeSeconds = (long)((totalShrinkBlocks / (double)worldConfig.shrinkAmount) * worldConfig.shrinkInterval);
+            border.setSize(worldConfig.minimumSize, shrinkTimeSeconds);
         }
     }
 
-    private static void startBorderShrinking(World world) {
+    public static void stop() {
         if (borderRunnable != null) {
             borderRunnable.cancel();
+            borderRunnable = null;
         }
-
-        FileConfiguration worldsConfig = plugin.getConfig();
-        String worldType = getWorldType(world);
-        String basePath = "CONFIG.WORLDS." + worldType + ".BORDER.shrink";
-
-        int timeInterval = worldsConfig.getInt(basePath + ".time-interval", 300);
-        double shrinkAmount = worldsConfig.getDouble(basePath + ".shrink-amount", 50.0);
-        double minimumSize = worldsConfig.getDouble(basePath + ".minimum-size", 50.0);
-
-        WorldBorder border = world.getWorldBorder();
-        borderRunnable = new BukkitRunnable() {
-            @Override
-            public void run() {
-                double currentSize = border.getSize();
-                if (currentSize <= minimumSize) {
-                    this.cancel();
-                    return;
-                }
-
-                double newSize = Math.max(currentSize - shrinkAmount, minimumSize);
-                border.setSize(newSize, timeInterval);
-
-                // Announce border shrinking
-                for (Player player : world.getPlayers()) {
-                    player.sendMessage("§cThe border is shrinking!");
-                    player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_ELDER_GUARDIAN_CURSE, 0.5f, 1.0f);
-                }
-            }
-        };
-        borderRunnable.runTaskTimer(plugin, timeInterval * 20L, timeInterval * 20L);
     }
 
     private static String getWorldType(World world) {
@@ -81,13 +55,6 @@ public class WorldBorderHandler {
                 return "END";
             default:
                 return "OVERWORLD";
-        }
-    }
-
-    public static void stop() {
-        if (borderRunnable != null) {
-            borderRunnable.cancel();
-            borderRunnable = null;
         }
     }
 }

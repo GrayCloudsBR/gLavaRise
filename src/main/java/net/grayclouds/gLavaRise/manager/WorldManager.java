@@ -36,18 +36,57 @@ public class WorldManager {
             newWorld.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
             newWorld.setStorm(false);
             
-            // Set proper world border
-            WorldBorder border = newWorld.getWorldBorder();
-            border.setCenter(newWorld.getSpawnLocation());
-            border.setSize(200.0); // Default size, can be configured
-            border.setWarningDistance(5);
-            border.setWarningTime(15);
+            // Set spawn location at a safe spot
+            Location spawnLoc = findSafeSpawnLocation(newWorld);
+            newWorld.setSpawnLocation(spawnLoc);
+            
+            // Initialize world border
+            net.grayclouds.gLavaRise.handler.WorldBorderHandler.setupWorldBorder(newWorld);
             
             currentGameWorld = newWorld;
             manageWorldBackups();
         }
 
         return newWorld;
+    }
+
+    private Location findSafeSpawnLocation(World world) {
+        FileConfiguration worldsConfig = configManager.getConfig("worlds.yml");
+        int radius = worldsConfig.getInt("WORLDS.OVERWORLD.spawn.radius", 50);
+        int minY = worldsConfig.getInt("WORLDS.OVERWORLD.spawn.min-y", 64);
+        int maxY = worldsConfig.getInt("WORLDS.OVERWORLD.spawn.max-y", 100);
+        boolean requireSafe = worldsConfig.getBoolean("WORLDS.OVERWORLD.spawn.safe-location", true);
+
+        // Start from the center
+        Location center = new Location(world, 0, maxY, 0);
+        
+        if (!requireSafe) {
+            return center;
+        }
+
+        // Search for a safe location
+        for (int y = maxY; y >= minY; y--) {
+            for (int r = 0; r <= radius; r += 5) {
+                for (int angle = 0; angle < 360; angle += 45) {
+                    double x = r * Math.cos(Math.toRadians(angle));
+                    double z = r * Math.sin(Math.toRadians(angle));
+                    Location loc = new Location(world, x, y, z);
+                    
+                    if (isSafeLocation(loc)) {
+                        return loc;
+                    }
+                }
+            }
+        }
+
+        // If no safe location found, return the center at minY
+        return new Location(world, 0, minY, 0);
+    }
+
+    private boolean isSafeLocation(Location loc) {
+        return loc.getBlock().getType().isAir() &&
+               loc.clone().add(0, 1, 0).getBlock().getType().isAir() &&
+               !loc.clone().subtract(0, 1, 0).getBlock().getType().isAir();
     }
 
     private void manageWorldBackups() {
@@ -135,5 +174,25 @@ public class WorldManager {
 
     public World getCurrentGameWorld() {
         return currentGameWorld;
+    }
+
+    public void deleteCurrentGameWorld() {
+        if (currentGameWorld != null) {
+            String worldName = currentGameWorld.getName();
+            
+            // Teleport all players to lobby first
+            teleportToLobby(currentGameWorld.getPlayers());
+            
+            // Unload the world
+            plugin.getServer().unloadWorld(currentGameWorld, false);
+            
+            // Delete the world directory
+            File worldDir = new File(plugin.getServer().getWorldContainer(), worldName);
+            if (worldDir.exists()) {
+                deleteDirectory(worldDir);
+            }
+            
+            currentGameWorld = null;
+        }
     }
 } 
