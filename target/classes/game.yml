@@ -1,0 +1,74 @@
+GAME:
+  auto-start:
+    enabled: true
+    min-players: 2
+    countdown-seconds: 30
+    cancel-on-player-leave: true
+
+  world-management:
+    world-prefix: "lavarise_"
+    delete-old-worlds: true
+    max-backup-worlds: 5
+    teleport-to-lobby: true
+    lobby-world: "world"
+    lobby-coordinates:
+      x: 0
+      y: 100
+      z: 0
+      yaw: 0
+      pitch: 0
+
+  respawn:
+    enabled: false
+    lives: 1
+    invincibility-duration: 3
+
+  gameplay:
+    pvp:
+      enabled: true
+      grace-period: 30
+    fall-damage: true
+    keep-inventory: false
+    allow-crafting: true
+    allow-building: true
+    block-break:
+      whitelist:
+        - STONE
+        - DIRT
+        - GRASS_BLOCK
+    block-place:
+      whitelist:
+        - STONE
+        - DIRT
+        - GRASS_BLOCK
+
+  starting-items:
+    enabled: true
+    clear-inventory: true
+    items:
+      - material: STONE_SWORD
+        amount: 1
+      - material: STONE_PICKAXE
+        amount: 1
+      - material: STONE_AXE
+        amount: 1
+      - material: COOKED_BEEF
+        amount: 16
+
+GENERAL:
+  debug-mode: false
+  allow-world-change: false
+  auto-start-timer: 10
+  minimum-players: 2
+  maximum-players: 100
+
+BORDER:
+  damage-scaling:
+    enabled: true
+    multiplier: 1.5
+    max-damage: 10
+  warning:
+    sound-enabled: true
+    title-enabled: true
+    actionbar-enabled: true
+    chat-enabled: true 

@@ -1,0 +1,84 @@
+SOUNDS:
+  elimination:
+    enabled: true
+    sound: ENTITY_WITHER_DEATH
+    volume: 1.0
+    pitch: 1.0
+
+  game.start:
+    enabled: true
+    sound: ENTITY_PLAYER_LEVELUP
+    volume: 1.0
+    pitch: 1.0
+
+  game.end:
+    enabled: true
+    sound: ENTITY_ENDER_DRAGON_DEATH
+    volume: 1.0
+    pitch: 1.0
+
+  game.win:
+    enabled: true
+    sound: UI_TOAST_CHALLENGE_COMPLETE
+    volume: 1.0
+    pitch: 1.0
+
+  game.lose:
+    enabled: true
+    sound: ENTITY_VILLAGER_DEATH
+    volume: 1.0
+    pitch: 1.0
+
+  pause:
+    enabled: true
+    sound: BLOCK_NOTE_BLOCK_BASS
+    volume: 1.0
+    pitch: 0.5
+
+  resume:
+    enabled: true
+    sound: BLOCK_NOTE_BLOCK_BASS
+    volume: 1.0
+    pitch: 1.0
+
+  height.warning:
+    enabled: true
+    sound: BLOCK_NOTE_BLOCK_PLING
+    volume: 1.0
+    pitch: 2.0
+
+  border.warning:
+    enabled: true
+    sound: ENTITY_ELDER_GUARDIAN_CURSE
+    volume: 0.5
+    pitch: 1.0
+
+  team.join:
+    enabled: true
+    sound: ENTITY_EXPERIENCE_ORB_PICKUP
+    volume: 1.0
+    pitch: 1.0
+
+  team.leave:
+    enabled: true
+    sound: BLOCK_NOTE_BLOCK_BASS
+    volume: 1.0
+    pitch: 0.5
+
+  error:
+    enabled: true
+    sound: ENTITY_VILLAGER_NO
+    volume: 1.0
+    pitch: 1.0
+
+  countdown.tick:
+    enabled: true
+    sound: BLOCK_NOTE_BLOCK_HAT
+    volume: 1.0
+    pitch: 1.0
+
+  countdown.final:
+    enabled: true
+    sound: BLOCK_NOTE_BLOCK_PLING
+    volume: 1.0
+    pitch: 2.0 

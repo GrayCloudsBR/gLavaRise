@@ -1,0 +1,84 @@
+WORLDS:
+  OVERWORLD:
+    enabled: true
+    RISE-INTERVAL: 15
+    RISE-TYPE: LAVA
+    HEIGHT:
+      start: -64
+      end: 320
+      announcement-interval: 5
+    BORDER:
+      initial-size: 200
+      shrink-enabled: true
+      shrink:
+        time-interval: 300
+        shrink-amount: 50
+        minimum-size: 50
+      damage:
+        enabled: true
+        amount: 2.0
+        radius: 5
+        interval: 1
+    environment:
+      time: 6000
+      weather: clear
+      difficulty: NORMAL
+      gamerules:
+        doWeatherCycle: false
+        doDaylightCycle: false
+        doMobSpawning: false
+        keepInventory: true
+    generation:
+      type: NORMAL
+      structures: false
+      seed: ""
+      void: false
+      flat: false
+    spawn:
+      spread-players: true
+      radius: 50
+      min-y: 64
+      max-y: 100
+      safe-location: true
+
+  NETHER:
+    enabled: false
+    RISE-INTERVAL: 15
+    RISE-TYPE: LAVA
+    HEIGHT:
+      start: 0
+      end: 128
+      announcement-interval: 5
+    BORDER:
+      initial-size: 200
+      shrink-enabled: true
+      shrink:
+        time-interval: 240
+        shrink-amount: 40
+        minimum-size: 40
+      damage:
+        enabled: true
+        amount: 3.0
+        radius: 5
+        interval: 1
+
+  END:
+    enabled: false
+    RISE-INTERVAL: 15
+    RISE-TYPE: VOID
+    HEIGHT:
+      start: 0
+      end: 256
+      announcement-interval: 5
+    BORDER:
+      initial-size: 300
+      shrink-enabled: true
+      shrink:
+        time-interval: 360
+        shrink-amount: 60
+        minimum-size: 60
+      damage:
+        enabled: true
+        amount: 2.0
+        radius: 5
+        interval: 1 

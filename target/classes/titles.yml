@@ -1,0 +1,32 @@
+TITLES:
+  elimination:
+    enabled: true
+    title: "§c§lELIMINATED!"
+    subtitle: "§7Better luck next time!"
+    fade-in: 10
+    stay: 70
+    fade-out: 20
+
+  win:
+    enabled: true
+    title: "§6§lVICTORY!"
+    subtitle: "§eYou won the game!"
+    fade-in: 10
+    stay: 100
+    fade-out: 20
+
+  game-start:
+    enabled: true
+    title: "§a§lGAME STARTED"
+    subtitle: "§eGood luck!"
+    fade-in: 10
+    stay: 60
+    fade-out: 20
+
+  game-end:
+    enabled: true
+    title: "§c§lGAME OVER"
+    subtitle: "§7Thanks for playing!"
+    fade-in: 10
+    stay: 70
+    fade-out: 20 
