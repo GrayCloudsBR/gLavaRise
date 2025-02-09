@@ -1,4 +1,4 @@
-gLavaRise
+# gLavaRise
 gLavaRise is a challenging Minecraft plugin where lava rises from the void while a world border slowly closes in! It is fully customizable, free, and open-source.
 ---
 Features
